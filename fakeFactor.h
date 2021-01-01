@@ -70,25 +70,44 @@ std::vector<std::string> getDirBinsSortedPath(std::string dirPath) {
     return ret;
 }
 
-map<TString, EColor> colors;
+void getVarAndRange(std::string cfstring, string &name, double &min, double &max){
+  TString ts_tmp;
+  std::vector<TString> ts_vec;
+  char *p;
+  char *buff = (char*)cfstring.data();
+  char *sep = (char*)",";
+  p = strsep(&buff, sep);
+  while(p!=NULL){
+    ts_tmp = p;
+    ts_tmp.ReplaceAll(" ", "");
+    if(ts_tmp!="") ts_vec.push_back(ts_tmp); //cout<<ts_tmp<<endl;
+    p = strsep(&buff, sep);
+  }
+  name = ts_vec.at(0).Data();
+  min = std::atof(ts_vec.at(1).Data());
+  max = std::atof(ts_vec.at(2).Data());
+}
 
-void stackHist(map<TString, TH1F*> &crfailHists, TString rg, std::vector<TString> igList = {""}){
+//map<TString, EColor> colors;
+map<TString, TString> colors;
+
+void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, string cfSuffix, std::vector<TString> igList = {""}){
   cout<<endl<<endl<<"drawing stack hist.."<<endl<<endl;
 
   gStyle->SetErrorX(0.5);
 
-  TCanvas *c = new TCanvas("c", "canvas", 800, 800);
+  TCanvas *c = new TCanvas("c", "canvas", 800, 600);
 
-  TLegend* lg = new TLegend(0.60, 0.8, 0.95, 0.9);
+  TLegend* lg = new TLegend(0.59, 0.6, 0.93, 0.9);
 
   TH1F *Data = (TH1F*) crfailHists["data"]->Clone("data");
   TH1F *Sig = (TH1F*) crfailHists["yy2L"]->Clone("yy2L");
 
-  double sig_scale = 0.2*Data->Integral()/Sig->Integral(); cout<<"signal yields: "<<Sig->Integral()<<endl;
+  int sig_scale = (int)std::round(0.2*Data->Integral()/Sig->Integral()); cout<<"signal yields: "<<Sig->Integral()<<endl;
   Sig->Scale(sig_scale);
 
   lg->AddEntry(Data, "Data", "lp");
-  lg->AddEntry(Sig, Form("signalx%f",sig_scale), "l");
+  lg->AddEntry(Sig, Form("signal #times %i",sig_scale), "l");
 
   double sumYields = 0.;
 
@@ -101,10 +120,12 @@ void stackHist(map<TString, TH1F*> &crfailHists, TString rg, std::vector<TString
     if(h_name == "yy2L") continue;
     if(std::find(igList.begin(), igList.end(), h_name) != igList.end()) continue;
     auto h_tmp = (TH1F*) hist.second->Clone(h_name); cout<<h_name<<" "<<h_tmp->Integral()<<endl;
-    h_tmp->SetFillColor(colors[h_name]);
+    //h_tmp->SetFillColor(colors[h_name]);
+    h_tmp->SetFillColor(TColor::GetColor(colors[h_name].Data()));
     h_tmp->SetLineWidth(0);
     Bkg->Add(h_tmp);
-    lg->AddEntry(h_tmp, h_name, "f");
+    TString name_tmp = h_name.ReplaceAll("_", " ");
+    lg->AddEntry(h_tmp, name_tmp, "f");
     sumYields += h_tmp->Integral();
   } cout<<endl<<"total bkg yields: "<<sumYields<<endl; cout<<endl<<"data yields: "<<Data->Integral()<<endl<<endl;
 
@@ -131,15 +152,20 @@ void stackHist(map<TString, TH1F*> &crfailHists, TString rg, std::vector<TString
   lg->SetBorderSize(0);
   lg->Draw("same");
 
+  Bkg->GetXaxis()->SetTitle(varName.data());
   Bkg->GetYaxis()->SetRangeUser(0., y_max*1.3);
   Data->GetYaxis()->SetRangeUser(0., y_max*1.3);
   Sig->GetYaxis()->SetRangeUser(0., y_max*1.3);
 
   Bkg->SetMaximum(y_max*1.3);
 
-  ATLASLabel(0.22,0.90,"Internal");
-  myText(0.22, 0.85, 1, "#sqrt{s}= 13 TeV, 139 fb^{-1}");
+  ATLASLabel(0.19,0.88,"Internal");
+  myText(0.19, 0.81, 1, "#sqrt{s}= 13 TeV, 139 fb^{-1}");
+  myText(0.19, 0.76, 1, "DiHiggs, #it{#gamma#gamma}+#it{#tau_{h}#tau_{h}}");
 
   c->Update();
-  c->SaveAs(rg+".png");
+  TString pngName = varName.data();
+  pngName += "_"+rg+"_";
+  pngName += cfSuffix.data();
+  c->SaveAs(pngName+".png");
 }

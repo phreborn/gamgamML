@@ -3,53 +3,76 @@
 void SR_pass(){
   gStyle->SetErrorX(0.5);
 
-  string config = "config2Tau";
+  string cfSuffix = "2taus";
+  string config = "config_";
+  config.append(cfSuffix);
   int nBins = 20;
 
   map<TString,TString> samples_id;
   samples_id["data"] = "data";
   samples_id["yy2L"] = "450698";
-  samples_id["Sherpa2_diphoton_myy_90_175"                 ]="364352";
-  samples_id["MGPy8_ttgammagamma_allhad"                   ]="345869";
-  samples_id["MGPy8_ttgammagamma_noallhad"                 ]="345868";
-  samples_id["PowhegPy8EG_NNPDF30_VBFH125"                 ]="346214";
-  samples_id["PowhegPy8_NNLOPS_ggH125"                     ]="343981";
-  samples_id["PowhegPy8_WmH125J"                           ]="345317";
-  samples_id["PowhegPy8_WpH125J"                           ]="345318";
-  samples_id["PowhegPy8_ZH125J"                            ]="345319";
-  samples_id["PowhegPy8_bbH125"                            ]="345315";
-  samples_id["PowhegPy8_ggZH125"                           ]="345061";
-  samples_id["PowhegPy8_ttH125_fixweight"                  ]="346525";
-  samples_id["Sherpa_224_eegammagamma_LO_pty_17_myy_80"    ]="364862";
-  samples_id["Sherpa_224_enugammagamma_LO_pty_17_myy_80"   ]="364874";
-  samples_id["Sherpa_224_mumugammagamma_LO_pty_17_myy_80"  ]="364865";
-  samples_id["Sherpa_224_munugammagamma_LO_pty_17_myy_80"  ]="364877";
-  samples_id["Sherpa_224_nunugammagamma_LO_pty_17_myy_80"  ]="364871";
-  samples_id["Sherpa_224_taunugammagamma_LO_pty_17_myy_80" ]="364880";
-  samples_id["Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"]="364868";
-  samples_id["aMCnloPy8_tHjb125_4fl_shw_fix"               ]="346188";
-  samples_id["aMCnloPy8_tWH125"                            ]="346486";
+  samples_id["Sherpa2_diphoton"                            ]="364352";
+  samples_id["MGPy8_ttgamgam_allhad"                       ]="345869";
+  samples_id["MGPy8_ttgamgam_noallhad"                     ]="345868";
+  samples_id["PowhegPy8EG_NNPDF30_VBF"                     ]="346214";
+  samples_id["PowhegPy8_NNLOPS_ggH"                        ]="343981";
+  samples_id["PowhegPy8_WmH"                               ]="345317";
+  samples_id["PowhegPy8_WpH"                               ]="345318";
+  samples_id["PowhegPy8_ZH"                                ]="345319";
+  samples_id["PowhegPy8_bbH"                               ]="345315";
+  samples_id["PowhegPy8_ggZH"                              ]="345061";
+  samples_id["PowhegPy8_ttH_fixweight"                     ]="346525";
+  samples_id["Sherpa_eegamgam"                             ]="364862";
+  samples_id["Sherpa_enugamgam"                            ]="364874";
+  samples_id["Sherpa_mumugamgam"                           ]="364865";
+  samples_id["Sherpa_munugamgam"                           ]="364877";
+  samples_id["Sherpa_nunugamgam"                           ]="364871";
+  samples_id["Sherpa_taunugamgam"                          ]="364880";
+  samples_id["Sherpa_tautaugamgam"                         ]="364868";
+  samples_id["aMCnloPy8_tHjb_4fl_shw_fix"                  ]="346188";
+  samples_id["aMCnloPy8_tWH"                               ]="346486";
 
-  colors["Sherpa2_diphoton_myy_90_175"] = (EColor) (kRed);
-  colors["MGPy8_ttgammagamma_allhad"] = (EColor) (kOrange+14);
-  colors["MGPy8_ttgammagamma_noallhad"] = (EColor) (kOrange+16);
-  colors["PowhegPy8EG_NNPDF30_VBFH125"] = (EColor) (kAzure+2);
-  colors["PowhegPy8_NNLOPS_ggH125"] = (EColor) (kAzure);
-  colors["PowhegPy8_WmH125J"] = (EColor) (kAzure+4);
-  colors["PowhegPy8_WpH125J"] = (EColor) (kAzure+6);
-  colors["PowhegPy8_ZH125J"] = (EColor) (kAzure+8);
-  colors["PowhegPy8_bbH125"] = (EColor) (kAzure+10);
-  colors["PowhegPy8_ggZH125"] = (EColor) (kAzure+11);
-  colors["PowhegPy8_ttH125_fixweight"] = (EColor) (kAzure+12);
-  colors["Sherpa_224_eegammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange);
-  colors["Sherpa_224_enugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+2);
-  colors["Sherpa_224_mumugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+4);
-  colors["Sherpa_224_munugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+6);
-  colors["Sherpa_224_nunugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+8);
-  colors["Sherpa_224_taunugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+10);
-  colors["Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+12);
-  colors["aMCnloPy8_tHjb125_4fl_shw_fix"] = (EColor) (kAzure+14);
-  colors["aMCnloPy8_tWH125"] = (EColor) (kAzure+16);
+  //colors["Sherpa2_diphoton"            ] = (EColor) (kRed);
+  //colors["MGPy8_ttgamgam_allhad"       ] = (EColor) (kOrange+14);
+  //colors["MGPy8_ttgamgam_noallhad"     ] = (EColor) (kOrange+16);
+  //colors["PowhegPy8EG_NNPDF30_VBF"     ] = (EColor) (kAzure+2);
+  //colors["PowhegPy8_NNLOPS_ggH"        ] = (EColor) (kAzure);
+  //colors["PowhegPy8_WmH"               ] = (EColor) (kAzure+4);
+  //colors["PowhegPy8_WpH"               ] = (EColor) (kAzure+6);
+  //colors["PowhegPy8_ZH"                ] = (EColor) (kAzure+8);
+  //colors["PowhegPy8_bbH"               ] = (EColor) (kAzure+10);
+  //colors["PowhegPy8_ggZH"              ] = (EColor) (kAzure+11);
+  //colors["PowhegPy8_ttH_fixweight"     ] = (EColor) (kAzure+12);
+  //colors["Sherpa_eegamgam"             ] = (EColor) (kOrange);
+  //colors["Sherpa_enugamgam"            ] = (EColor) (kOrange+2);
+  //colors["Sherpa_mumugamgam"           ] = (EColor) (kOrange+4);
+  //colors["Sherpa_munugamgam"           ] = (EColor) (kOrange+6);
+  //colors["Sherpa_nunugamgam"           ] = (EColor) (kOrange+8);
+  //colors["Sherpa_taunugamgam"          ] = (EColor) (kOrange+10);
+  //colors["Sherpa_tautaugamgam"         ] = (EColor) (kOrange+12);
+  //colors["aMCnloPy8_tHjb_4fl_shw_fix"  ] = (EColor) (kAzure+14);
+  //colors["aMCnloPy8_tWH"               ] = (EColor) (kAzure+16);
+
+  colors["Sherpa2_diphoton"            ] = "#CC3333";
+  colors["MGPy8_ttgamgam_allhad"       ] = "#";
+  colors["MGPy8_ttgamgam_noallhad"     ] = "#";
+  colors["PowhegPy8EG_NNPDF30_VBF"     ] = "#";
+  colors["PowhegPy8_NNLOPS_ggH"        ] = "#";
+  colors["PowhegPy8_WmH"               ] = "#";
+  colors["PowhegPy8_WpH"               ] = "#";
+  colors["PowhegPy8_ZH"                ] = "#CC3366";
+  colors["PowhegPy8_bbH"               ] = "#";
+  colors["PowhegPy8_ggZH"              ] = "#663366";
+  colors["PowhegPy8_ttH_fixweight"     ] = "#";
+  colors["Sherpa_eegamgam"             ] = "#";
+  colors["Sherpa_enugamgam"            ] = "#";
+  colors["Sherpa_mumugamgam"           ] = "#";
+  colors["Sherpa_munugamgam"           ] = "#";
+  colors["Sherpa_nunugamgam"           ] = "#";
+  colors["Sherpa_taunugamgam"          ] = "#666666";
+  colors["Sherpa_tautaugamgam"         ] = "#CCCCCC";
+  colors["aMCnloPy8_tHjb_4fl_shw_fix"  ] = "#";
+  colors["aMCnloPy8_tWH"               ] = "#";
 
   string sDir;
   readConfigFile(config.data(), "inputPath", sDir);
@@ -94,6 +117,13 @@ void SR_pass(){
   string srfailAllCut = Form("%s && %s && %s", nomCut.data(), srCut.data(), srfailCut.data()); cout<<endl<<"sr fail cuts: "<<srfailAllCut<<endl<<endl;
   string srpassAllCut = Form("%s && %s && %s", nomCut.data(), srCut.data(), srpassCut.data()); cout<<endl<<"sr pass cuts: "<<srpassAllCut<<endl<<endl;
 
+  string mainVar;
+  readConfigFile(config.data(), "mainVar", mainVar);
+
+  string obsVar;
+  double varMin, varMax;
+  getVarAndRange(mainVar, obsVar, varMin, varMax); cout<<"variable to draw: "<<obsVar<<" "<<varMin<<" "<<varMax<<endl;
+
   map<TString, TH1F*> srpassHists;
   map<TString, TH1F*> srfailHists;
   map<TString, TH1F*> srfailTimesFFHists;
@@ -116,41 +146,41 @@ void SR_pass(){
 
     ROOT::RDataFrame df(ch, {"m_yy"});
 
-    TH1F h_sr_fail("h_sr_fail", "", nBins, 105, 160); h_sr_fail.Sumw2();
-    TH1F h_sr_pass("h_sr_pass", "", nBins, 105, 160); h_sr_pass.Sumw2();
+    TH1F h_sr_fail("h_sr_fail", "", nBins, varMin, varMax); h_sr_fail.Sumw2();
+    TH1F h_sr_pass("h_sr_pass", "", nBins, varMin, varMax); h_sr_pass.Sumw2();
 
     auto df_sr_fail = df.Filter(srfailAllCut);
-    df_sr_fail.Foreach([&h_sr_fail] (double m_yy, double w) { h_sr_fail.Fill(m_yy/1000, w); }, {"m_yy", "wt"}); cout<<sample<<"_SR_failID :"<<h_sr_fail.Integral()<<endl;
+    df_sr_fail.Foreach([&h_sr_fail] (double var, double w) { h_sr_fail.Fill(var/1000, w); }, {obsVar.data(), "wt"}); cout<<sample<<"_SR_failID :"<<h_sr_fail.Integral()<<endl;
     srfailHists[sample] = (TH1F*) h_sr_fail.Clone(sample+"_SR_failID");
 
     if(doBlind && sample=="data"){
       auto df_sr_pass = df.Filter(srpassAllCut).Filter(blindCut);
-      df_sr_pass.Foreach([&h_sr_pass] (double m_yy, double w) { h_sr_pass.Fill(m_yy/1000, w); }, {"m_yy", "wt"});
+      df_sr_pass.Foreach([&h_sr_pass] (double var, double w) { h_sr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
       srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
     }else{
       auto df_sr_pass = df.Filter(srpassAllCut);
-      df_sr_pass.Foreach([&h_sr_pass] (double m_yy, double w) { h_sr_pass.Fill(m_yy/1000, w); }, {"m_yy", "wt"});
+      df_sr_pass.Foreach([&h_sr_pass] (double var, double w) { h_sr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
       srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
     }
 
-    TH1F h_sr_fail_x_FF_nom("h_sr_fail_x_FF_nom", "", nBins, 105, 160);
+    TH1F h_sr_fail_x_FF_nom("h_sr_fail_x_FF_nom", "", nBins, varMin, varMax);
     h_sr_fail_x_FF_nom.Sumw2();
-    TH1F h_sr_fail_x_FF_upFF("h_sr_fail_x_FF_upFF", "", nBins, 105, 160);
+    TH1F h_sr_fail_x_FF_upFF("h_sr_fail_x_FF_upFF", "", nBins, varMin, varMax);
 
-    if(sample!="yy2L"&&sample!="Sherpa2_diphoton_myy_90_175"){
+    if(sample!="yy2L"&&sample!="Sherpa2_diphoton"){
       auto df_sr_pass = df.Filter(srfailAllCut);
 
-      df_sr_pass.Foreach([&h_FF, &h_sr_fail_x_FF_nom](double m_yy, double tau0_pt, double tau1_pt, double w){
+      df_sr_pass.Foreach([&h_FF, &h_sr_fail_x_FF_nom](double var, double tau0_pt, double tau1_pt, double w){
         double ff0 = h_FF->GetBinContent(h_FF->FindBin(tau0_pt/1000));
         double ff1 = h_FF->GetBinContent(h_FF->FindBin(tau1_pt/1000));
-        h_sr_fail_x_FF_nom.Fill(m_yy/1000, w*ff0*ff1);
-      },{"m_yy", "tau0_pt", "tau1_pt", "wt"});
+        h_sr_fail_x_FF_nom.Fill(var/1000, w*ff0*ff1);
+      },{obsVar.data(), "tau0_pt", "tau1_pt", "wt"});
 
-      df_sr_pass.Foreach([&h_FF, &h_sr_fail_x_FF_upFF](double m_yy, double tau0_pt, double tau1_pt, double w){
+      df_sr_pass.Foreach([&h_FF, &h_sr_fail_x_FF_upFF](double var, double tau0_pt, double tau1_pt, double w){
         double ff0 = h_FF->GetBinError(h_FF->FindBin(tau0_pt/1000))+h_FF->GetBinContent(h_FF->FindBin(tau0_pt/1000));
         double ff1 = h_FF->GetBinError(h_FF->FindBin(tau1_pt/1000))+h_FF->GetBinContent(h_FF->FindBin(tau1_pt/1000));
-        h_sr_fail_x_FF_upFF.Fill(m_yy/1000, w*ff0*ff1);
-      }, {"m_yy", "tau0_pt", "tau1_pt", "wt"});
+        h_sr_fail_x_FF_upFF.Fill(var/1000, w*ff0*ff1);
+      }, {obsVar.data(), "tau0_pt", "tau1_pt", "wt"});
 
       for(int i = 1; i <= nBins; i++){
         double sysFF = h_sr_fail_x_FF_upFF.GetBinContent(i)-h_sr_fail_x_FF_nom.GetBinContent(i);
@@ -168,7 +198,7 @@ void SR_pass(){
   for(auto hist : srfailTimesFFHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
-    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    if(hist.first == "Sherpa2_diphoton") continue;
     h_SR_fail_x_FF->Add(hist.second, -1); cout<<hist.first<<" :"<<hist.second->Integral()<<endl;
   } //h_SR_fail_x_FF->Draw("e");
   cout<<endl<<"==> SR failID x FF (MC subtracted):"<<h_SR_fail_x_FF->Integral()<<endl<<endl;
@@ -176,11 +206,12 @@ void SR_pass(){
   /****** ignore and merge bkgs ******/
   std::vector<TString> ignoreList;
 
-  ignoreList.push_back("Sherpa2_diphoton_myy_90_175");
+  ignoreList.push_back("Sherpa2_diphoton");
   srpassHists["yyjj_fake"] = (TH1F*)h_SR_fail_x_FF->Clone("yyjj_fake_SR_passID");
-  colors["yyjj_fake"] = (EColor) (kRed);
+  //colors["yyjj_fake"] = (EColor) (kRed);
+  colors["yyjj_fake"] = "#CC3333";
 
-  TH1F h_minorBkgs("minor_bkgs", "", nBins, 105, 160); h_minorBkgs.Sumw2();
+  TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2();
   for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
   for(auto h : srpassHists){
     TString h_name = h.first;
@@ -190,8 +221,9 @@ void SR_pass(){
     h_minorBkgs.Add(h_tmp);
   }
   srpassHists["others"] = (TH1F*)h_minorBkgs.Clone("others_SR_passID");
-  colors["others"] = (EColor) (kOrange);
+  //colors["others"] = (EColor) (kOrange);
+  colors["others"] = "#FF6600";
 
   /****** draw hist stack plot ******/
-  stackHist(srpassHists, "VR", ignoreList);
+  stackHist(srpassHists, obsVar, "VR", cfSuffix, ignoreList);
 }

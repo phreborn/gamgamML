@@ -40,3 +40,6 @@ crfailID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_fla
 
 doBlind: TRUE
 blindSel: m_yy/1000<120 || m_yy/1000>130
+
+#m_yy/1000
+mainVar: m_yy, 105, 160

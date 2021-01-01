@@ -1,0 +1,145 @@
+#include "/scratchfs/bes/chenhr/atlaswork/ATLAS_style/atlasrootstyle/AtlasUtils.h"
+#include "/scratchfs/bes/chenhr/atlaswork/ATLAS_style/atlasrootstyle/AtlasStyle.h"
+#include "/scratchfs/bes/chenhr/atlaswork/ATLAS_style/atlasrootstyle/AtlasLabels.h"
+
+#ifdef __CLING__
+// these are not headers - do not treat them as such - needed for ROOT6
+#include "/scratchfs/bes/chenhr/atlaswork/ATLAS_style/atlasrootstyle/AtlasLabels.C"
+#include "/scratchfs/bes/chenhr/atlaswork/ATLAS_style/atlasrootstyle/AtlasUtils.C"
+#endif
+
+#include <iterator>
+#include <iostream>
+#include <vector>
+#include <stdio.h>
+#include <dirent.h>
+
+#include <sstream>
+#include <fstream>
+
+#include <string.h>
+
+using namespace std;
+
+static bool readConfigFile(const char * cfgfilepath, const string & key, string & value)
+{   
+    fstream cfgFile;
+    cfgFile.open(cfgfilepath);
+    if( ! cfgFile.is_open())
+    {   
+        cout<<"can not open cfg file!"<<endl;
+        return false;
+    }
+    char tmp[1000];
+    while(!cfgFile.eof())
+    {   
+        cfgFile.getline(tmp,1000);
+        string line(tmp);
+        size_t pos = line.find(':');
+        if(pos==string::npos) continue;
+        string tmpKey = line.substr(0,pos);
+        if(key==tmpKey)
+        {   
+            value = line.substr(pos+1);
+        }
+    }
+    return false;
+}
+
+int fileNameFilter(const struct dirent *cur) {
+    std::string str(cur->d_name);
+    if (str.find("..") != std::string::npos) {
+        return 0;
+    }
+    return 1;
+}
+
+std::vector<std::string> getDirBinsSortedPath(std::string dirPath) {
+    struct dirent **namelist;
+    std::vector<std::string> ret;
+    int n = scandir(dirPath.c_str(), &namelist, fileNameFilter, alphasort);
+    if (n < 0) {
+        return ret;
+    }
+    for (int i = 0; i < n; ++i) {
+        std::string filePath(namelist[i]->d_name);
+        ret.push_back(filePath);
+        free(namelist[i]);
+    };
+    free(namelist);
+    return ret;
+}
+
+map<TString, EColor> colors;
+
+void stackHist(map<TString, TH1F*> &crfailHists, TString rg, std::vector<TString> igList = {""}){
+  cout<<endl<<endl<<"drawing stack hist.."<<endl<<endl;
+
+  gStyle->SetErrorX(0.5);
+
+  TCanvas *c = new TCanvas("c", "canvas", 800, 800);
+
+  TLegend* lg = new TLegend(0.60, 0.8, 0.95, 0.9);
+
+  TH1F *Data = (TH1F*) crfailHists["data"]->Clone("data");
+  TH1F *Sig = (TH1F*) crfailHists["yy2L"]->Clone("yy2L");
+
+  double sig_scale = 0.2*Data->Integral()/Sig->Integral(); cout<<"signal yields: "<<Sig->Integral()<<endl;
+  Sig->Scale(sig_scale);
+
+  lg->AddEntry(Data, "Data", "lp");
+  lg->AddEntry(Sig, Form("signalx%f",sig_scale), "l");
+
+  double sumYields = 0.;
+
+  THStack *Bkg = new THStack("hs_CR_failID", "");
+  //gStyle->SetPalette(kOcean);
+  cout<<endl<<"BKGs' yields:"<<endl;
+  for(auto hist : crfailHists){
+    TString h_name = hist.first;
+    if(h_name == "data") continue;
+    if(h_name == "yy2L") continue;
+    if(std::find(igList.begin(), igList.end(), h_name) != igList.end()) continue;
+    auto h_tmp = (TH1F*) hist.second->Clone(h_name); cout<<h_name<<" "<<h_tmp->Integral()<<endl;
+    h_tmp->SetFillColor(colors[h_name]);
+    h_tmp->SetLineWidth(0);
+    Bkg->Add(h_tmp);
+    lg->AddEntry(h_tmp, h_name, "f");
+    sumYields += h_tmp->Integral();
+  } cout<<endl<<"total bkg yields: "<<sumYields<<endl; cout<<endl<<"data yields: "<<Data->Integral()<<endl<<endl;
+
+  double y_max = 0.;
+  double data_max = Data->GetMaximum(); cout<<"data y axis maximum: "<<data_max<<endl;
+  double bkg_max = Bkg->GetMaximum(); cout<<"bkg y axis maximum: "<<bkg_max<<endl;
+  y_max = data_max;
+  if(bkg_max>y_max) y_max = bkg_max; //cout<<y_max<<endl;
+
+  TH1F *Bkg_err = (TH1F*)Bkg->GetStack()->Last()->Clone("Bkg_error");
+  Bkg_err->SetMarkerSize(0);
+  Bkg_err->SetFillStyle(3001);
+  Bkg_err->SetFillColor(kBlack);
+
+  //Bkg->Draw("hist pfc");
+  Bkg->Draw("hist");
+  Bkg_err->Draw("e2 same");
+  Data->SetMarkerSize(1);
+  Data->Draw("same e");
+  Sig->SetLineColor(kGreen);
+  Sig->SetLineWidth(1);
+  Sig->Draw("same hist");
+
+  lg->SetBorderSize(0);
+  lg->Draw("same");
+
+  Bkg->GetYaxis()->SetRangeUser(0., y_max*1.3);
+  Data->GetYaxis()->SetRangeUser(0., y_max*1.3);
+  Sig->GetYaxis()->SetRangeUser(0., y_max*1.3);
+
+  Bkg->SetMaximum(y_max*1.3);
+
+  ATLASLabel(0.22,0.90,"Internal");
+  myText(0.22, 0.85, 1, "#sqrt{s}= 13 TeV, 139 fb^{-1}");
+
+  c->Update();
+  c->SaveAs(rg+".png");
+}

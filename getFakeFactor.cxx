@@ -1,0 +1,297 @@
+#include "fakeFactor.h"
+
+void getFakeFactor()
+{
+  gStyle->SetErrorX(0.5);
+  gStyle->SetPalette(kOcean);
+
+  TFile *f_out = new TFile("forSR_pass.root", "recreate");
+
+  string config = "config2Tau";
+  //string config = "configLepTau";
+  double maxFFVar = 120000;
+  int nBins = 20;
+
+  colors["Sherpa2_diphoton_myy_90_175"] = (EColor) (kRed);
+  colors["MGPy8_ttgammagamma_allhad"] = (EColor) (kOrange+14);
+  colors["MGPy8_ttgammagamma_noallhad"] = (EColor) (kOrange+16);
+  colors["PowhegPy8EG_NNPDF30_VBFH125"] = (EColor) (kAzure+2);
+  colors["PowhegPy8_NNLOPS_ggH125"] = (EColor) (kAzure);
+  colors["PowhegPy8_WmH125J"] = (EColor) (kAzure+4);
+  colors["PowhegPy8_WpH125J"] = (EColor) (kAzure+6);
+  colors["PowhegPy8_ZH125J"] = (EColor) (kAzure+8);
+  colors["PowhegPy8_bbH125"] = (EColor) (kAzure+10);
+  colors["PowhegPy8_ggZH125"] = (EColor) (kAzure+11);
+  colors["PowhegPy8_ttH125_fixweight"] = (EColor) (kAzure+12);
+  colors["Sherpa_224_eegammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange);
+  colors["Sherpa_224_enugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+2);
+  colors["Sherpa_224_mumugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+4);
+  colors["Sherpa_224_munugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+6);
+  colors["Sherpa_224_nunugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+8);
+  colors["Sherpa_224_taunugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+10);
+  colors["Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+12);
+  colors["aMCnloPy8_tHjb125_4fl_shw_fix"] = (EColor) (kAzure+14);
+  colors["aMCnloPy8_tWH125"] = (EColor) (kAzure+16);
+
+  map<TString,TString> samples_id;
+  //samples_id["vbf"] = "346214";
+  //samples_id["ZH"] = "345319";
+  //samples_id["ggh"] = "343981";
+  //samples_id["yy"] = "364352";
+  samples_id["data"] = "data";
+  samples_id["yy2L"] = "450698";
+
+  samples_id["Sherpa2_diphoton_myy_90_175"                 ]="364352"; 
+  samples_id["MGPy8_ttgammagamma_allhad"                   ]="345869"; 
+  samples_id["MGPy8_ttgammagamma_noallhad"                 ]="345868"; 
+  samples_id["PowhegPy8EG_NNPDF30_VBFH125"                 ]="346214"; 
+  samples_id["PowhegPy8_NNLOPS_ggH125"                     ]="343981"; 
+  samples_id["PowhegPy8_WmH125J"                           ]="345317"; 
+  samples_id["PowhegPy8_WpH125J"                           ]="345318"; 
+  samples_id["PowhegPy8_ZH125J"                            ]="345319"; 
+  samples_id["PowhegPy8_bbH125"                            ]="345315"; 
+  samples_id["PowhegPy8_ggZH125"                           ]="345061"; 
+  samples_id["PowhegPy8_ttH125_fixweight"                  ]="346525"; 
+  samples_id["Sherpa_224_eegammagamma_LO_pty_17_myy_80"    ]="364862"; 
+  samples_id["Sherpa_224_enugammagamma_LO_pty_17_myy_80"   ]="364874"; 
+  samples_id["Sherpa_224_mumugammagamma_LO_pty_17_myy_80"  ]="364865"; 
+  samples_id["Sherpa_224_munugammagamma_LO_pty_17_myy_80"  ]="364877"; 
+  samples_id["Sherpa_224_nunugammagamma_LO_pty_17_myy_80"  ]="364871"; 
+  samples_id["Sherpa_224_taunugammagamma_LO_pty_17_myy_80" ]="364880"; 
+  samples_id["Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"]="364868"; 
+  samples_id["aMCnloPy8_tHjb125_4fl_shw_fix"               ]="346188"; 
+  samples_id["aMCnloPy8_tWH125"                            ]="346486";
+
+  string sDir;
+  readConfigFile(config.data(), "inputPath", sDir);
+
+  TString dirpath = sDir.data();
+  std::string path_str = dirpath.Data();
+  std::vector<std::string> sub_dirs = getDirBinsSortedPath(path_str);
+
+  std::vector<std::string> files(0);
+
+  for(auto d : sub_dirs){
+    if(d==".") continue;
+    if(d.find("fullrun2") == std::string::npos) continue; //cout<<"d: "<<path_str+d<<endl;
+    std::vector<std::string> fs = getDirBinsSortedPath(path_str+d);
+    for(auto f : fs){
+      if(f==".") continue; //cout<<"f: "<<path_str+d+"/"+f<<endl;
+      files.push_back(path_str+d+"/"+f);
+      
+    }
+  }
+
+  cout<<"\n"<<endl;
+
+  bool doBlind = true;
+  string blind_tmp = "";
+  readConfigFile(config.data(), "doBlind", blind_tmp);
+  if(blind_tmp.find("TRUE") != std::string::npos) doBlind = true;
+  else doBlind = false;
+
+  string nomCut = "";
+  string srCut = "";
+  string crCut = "";
+  string passCut = "";
+  string failCut = "";
+  string crpassCut = "";
+  string crfailCut = "";
+  string srpassCut = "";
+  string srfailCut = "";
+  string blindCut = "";
+
+  readConfigFile(config.data(), "nomSel", nomCut);
+  readConfigFile(config.data(), "srSel", srCut);
+  readConfigFile(config.data(), "crSel", crCut);
+  readConfigFile(config.data(), "passID", passCut);
+  readConfigFile(config.data(), "failID", failCut);
+  readConfigFile(config.data(), "crpassID", crpassCut);
+  readConfigFile(config.data(), "crfailID", crfailCut);
+  readConfigFile(config.data(), "srpassID", srpassCut);
+  readConfigFile(config.data(), "srfailID", srfailCut);
+  readConfigFile(config.data(), "blindSel", blindCut);
+
+  map<TString, TH1F*> srpassHists;
+  map<TString, TH1F*> srfailHists;
+  map<TString, TH1F*> crpassHists;
+  map<TString, TH1F*> crfailHists;
+
+  for (auto it = samples_id.begin(); it != samples_id.end(); it++){
+    TString sample = it->first;
+    TString sample_id = it->second;
+    cout<<"processing "<<sample<<".."<<endl;
+
+    TChain ch("output", "output");
+
+    for(auto f : files){
+      TString filepath = f.data();
+      if(f.find(it->second) == std::string::npos) continue;
+      ch.Add(filepath);
+    }
+
+    //ROOT::RDataFrame df("output", filepath.Data(), {"m_yy"});
+    ROOT::RDataFrame df(ch, {"m_yy"});
+
+    //TH1F h_cr_fail("h_cr_fail", "", nBins, 105, 160);
+    //TH1F h_cr_pass("h_cr_pass", "", nBins, 105, 160);
+    TH1F h_cr_fail("h_cr_fail", "", nBins, 20, maxFFVar/1000);
+    TH1F h_cr_pass("h_cr_pass", "", nBins, 20, maxFFVar/1000);
+
+    TH1F h_sr_fail("h_sr_fail", "", nBins, 20, maxFFVar/1000);
+    TH1F h_sr_pass("h_sr_pass", "", nBins, 20, maxFFVar/1000);
+
+    auto df_cr_fail = df.Filter(nomCut).Filter(crCut).Filter(crfailCut);
+    //auto df_cr_fail = df.Filter(nomCut).Filter(crCut).Filter(passCut);
+    //auto df_cr_fail = df.Filter(nomCut).Filter(srCut).Filter(failCut);
+    //auto df_cr_fail = df.Filter(nomCut).Filter(srCut).Filter(passCut);
+    //df_cr_fail.Foreach([&h_cr_fail] (double m_yy, double w) { h_cr_fail.Fill(m_yy/1000, w); }, {"m_yy", "wt"});
+    df_cr_fail.Foreach([&h_cr_fail] (double tau0_pt, double w) { h_cr_fail.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+    crfailHists[sample] = (TH1F*) h_cr_fail.Clone(sample+"_CR_failID");
+
+    auto df_cr_pass = df.Filter(nomCut).Filter(crCut).Filter(crpassCut);
+    //df_cr_pass.Foreach([&h_cr_pass] (double m_yy, double w) { h_cr_pass.Fill(m_yy/1000, w); }, {"m_yy", "wt"});
+    df_cr_pass.Foreach([&h_cr_pass] (double tau0_pt, double w) { h_cr_pass.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+    crpassHists[sample] = (TH1F*) h_cr_pass.Clone(sample+"_CR_passID");
+
+    auto df_sr_fail = df.Filter(nomCut).Filter(srCut).Filter(crfailCut); // using crfailCut for MC comparison between SR and VR
+    df_sr_fail.Foreach([&h_sr_fail] (double tau0_pt, double w) { h_sr_fail.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+    srfailHists[sample] = (TH1F*) h_sr_fail.Clone(sample+"_SR_failID");
+
+    if(doBlind && sample=="data"){
+      auto df_sr_pass = df.Filter(nomCut).Filter(srCut).Filter(crpassCut).Filter(blindCut);
+      df_sr_pass.Foreach([&h_sr_pass] (double tau0_pt, double w) { h_sr_pass.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+      srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
+    }else{
+      auto df_sr_pass = df.Filter(nomCut).Filter(srCut).Filter(crpassCut);
+      df_sr_pass.Foreach([&h_sr_pass] (double tau0_pt, double w) { h_sr_pass.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+      srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
+    }
+
+//    cout<<"count: "<<h.Integral()<<endl;
+  }
+
+  //stackHist(crfailHists, "CR");
+
+
+  /* ====== Data Driven FF ====== */
+  TH1F *h_CR_fail = (TH1F*) crfailHists["data"]->Clone("CR_failID"); cout<<"data in CR_failID : "<<h_CR_fail->Integral()<<endl;
+  //h_CR_fail->Draw();
+  for(auto hist : crfailHists){
+    if(hist.first == "data") continue;
+    if(hist.first == "yy2L") continue;
+    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    h_CR_fail->Add(hist.second, -1);
+    cout<<hist.first<<" : "<<hist.second->Integral()<<endl;
+  }
+
+  TH1F *h_CR_pass = (TH1F*) crpassHists["data"]->Clone("CR_passID");
+  for(auto hist : crpassHists){
+    if(hist.first == "data") continue;
+    if(hist.first == "yy2L") continue;
+    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    h_CR_pass->Add(hist.second, -1);
+  }
+
+  h_CR_fail->Sumw2();
+  h_CR_pass->Sumw2();
+
+  TH1F *h_FF = (TH1F*) h_CR_pass->Clone("fakeFactor");
+  h_FF->Divide(h_CR_fail);
+
+  cout<<"CR passID (MC subtracted): "<<h_CR_pass->Integral()<<endl;
+  cout<<"CR failID (MC subtracted): "<<h_CR_fail->Integral()<<endl;
+
+  //h_CR_fail->Draw();
+  //h_CR_pass->Draw("same");
+
+  //h_FF->SetMinimum(0.);
+  //h_FF->Draw("hist e");
+
+  //double x_rebin[2] = {20, maxFFVar/1000};
+  //int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
+  //auto h_CR_fail_1bin = h_CR_fail->Rebin(length-1, "rebin", x_rebin);cout<<h_CR_fail_1bin->GetBinError(1)<<endl;
+  //auto h_CR_pass_1bin = h_CR_pass->Rebin(length-1, "rebin", x_rebin);cout<<h_CR_pass_1bin->GetBinError(1)<<endl;
+  //h_CR_fail_1bin->SetMinimum(0.);
+  //h_CR_fail_1bin->Draw("hist e");
+  //h_CR_pass_1bin->Draw("same e");
+  //h_CR_pass_1bin->Sumw2(); // needed
+  //h_CR_fail_1bin->Sumw2();
+  //TH1F *h_FF_1bin = (TH1F*)h_CR_pass_1bin->Clone("FF_1bin");
+  //h_FF_1bin->Divide(h_CR_fail_1bin);
+  //h_FF_1bin->Draw("e");
+  //cout<<h_FF_1bin->GetBinError(1)<<endl;
+
+  double x_rebin[5] = {20, 30, 40, 60, maxFFVar/1000};
+  int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
+  auto h_CR_fail_rb = h_CR_fail->Rebin(length-1, "rebin", x_rebin);
+  auto h_CR_pass_rb = h_CR_pass->Rebin(length-1, "rebin", x_rebin);
+  h_CR_fail_rb->Sumw2();
+  h_CR_pass_rb->Sumw2();
+  auto h_FF_rb = (TH1F*) h_CR_pass_rb->Clone("fakeFactor_rebin");
+  h_FF_rb->Divide(h_CR_fail_rb);
+  int binNum = h_FF_rb->GetNbinsX();
+  for(int i = 1; i <= binNum; i++){
+    cout<<i<<" bin pass:"<<h_CR_pass_rb->GetBinContent(i)<<" "<<h_CR_pass_rb->GetBinError(i)<<endl;
+    cout<<i<<" bin fail:"<<h_CR_fail_rb->GetBinContent(i)<<" "<<h_CR_fail_rb->GetBinError(i)<<endl;
+    cout<<i<<" bin ratio:"<<h_FF_rb->GetBinContent(i)<<" "<<h_FF_rb->GetBinError(i)<<endl;
+  }
+
+  h_FF_rb->SetMinimum(0.);
+  h_FF_rb->SetMaximum(0.3);
+  h_FF_rb->SetMarkerSize(0);
+  h_FF_rb->SetLineColor(kBlue);
+  h_FF_rb->Draw("e1");
+
+  //TH1F *h_FF_rb_tt = (TH1F*)h_FF_rb->Clone("FF_rb_tautau");
+  //h_FF_rb_tt->Sumw2();
+  //h_FF_rb_tt->Multiply(h_FF_rb);
+  //h_FF_rb_tt->SetMinimum(0.);
+  //h_FF_rb_tt->Draw("e");
+
+  /* ====== FF from MC yy comparison between SR and VR ====== */
+  TH1F *h_yy_cr_pass = (TH1F*)crpassHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_cr_pass");
+  TH1F *h_yy_cr_fail = (TH1F*)crfailHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_cr_fail");
+  h_yy_cr_pass->Sumw2();
+  h_yy_cr_fail->Sumw2();
+  auto h_yy_cr_pass_rb = h_yy_cr_pass->Rebin(length-1, "rebin", x_rebin);
+  auto h_yy_cr_fail_rb = h_yy_cr_fail->Rebin(length-1, "rebin", x_rebin);
+  TH1F *h_FF_yy_cr_rb = (TH1F*) h_yy_cr_pass_rb->Clone("FF_yy_cr_rb");
+  h_FF_yy_cr_rb->Divide(h_yy_cr_fail_rb);
+  h_FF_yy_cr_rb->SetMinimum(0.);
+  h_FF_yy_cr_rb->SetLineColor(kBlue);
+  h_FF_yy_cr_rb->SetMarkerSize(0);
+
+  TH1F *h_yy_sr_pass = (TH1F*)srpassHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_sr_pass");
+  TH1F *h_yy_sr_fail = (TH1F*)srfailHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_sr_fail");
+  h_yy_sr_pass->Sumw2();
+  h_yy_sr_fail->Sumw2();
+  auto h_yy_sr_pass_rb = h_yy_sr_pass->Rebin(length-1, "rebin", x_rebin);
+  auto h_yy_sr_fail_rb = h_yy_sr_fail->Rebin(length-1, "rebin", x_rebin);
+  TH1F *h_FF_yy_sr_rb = (TH1F*) h_yy_sr_pass_rb->Clone("FF_yy_sr_rb");
+  h_FF_yy_sr_rb->Divide(h_yy_sr_fail_rb);
+  h_FF_yy_sr_rb->SetMinimum(0.);
+  h_FF_yy_sr_rb->SetMaximum(0.3);
+  h_FF_yy_sr_rb->SetLineColor(kRed);
+  h_FF_yy_sr_rb->SetMarkerSize(0);
+
+  //h_FF_yy_sr_rb->Draw("e");
+  //h_FF_yy_cr_rb->Draw("same e");
+
+
+  TH1F *h_SR_fail = (TH1F*) srfailHists["data"]->Clone("SR_failID"); cout<<"SR failID:"<<h_SR_fail->Integral()<<endl;
+  for(auto hist : srfailHists){
+    if(hist.first == "data") continue;
+    if(hist.first == "yy2L") continue;
+    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    h_SR_fail->Add(hist.second, -1);
+  } cout<<"SR failID (MC subtracted):"<<h_SR_fail->Integral()<<endl;
+  h_SR_fail->Sumw2();
+  //h_SR_fail->Draw("e");
+
+  f_out->cd();
+  h_FF_rb->Write();
+  h_FF_yy_sr_rb->Write();
+  h_FF_yy_cr_rb->Write();
+//  h.Write();
+}

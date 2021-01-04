@@ -101,13 +101,11 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   TLegend* lg = new TLegend(0.59, 0.6, 0.93, 0.9);
 
   TH1F *Data = (TH1F*) crfailHists["data"]->Clone("data");
-  TH1F *Sig = (TH1F*) crfailHists["yy2L"]->Clone("yy2L");
+  TH1F *Sig = (TH1F*) crfailHists["yy2L"]->Clone("yy2L"); cout<<"signal yields: "<<Sig->Integral()<<endl;
 
-  int sig_scale = (int)std::round(0.2*Data->Integral()/Sig->Integral()); cout<<"signal yields: "<<Sig->Integral()<<endl;
-  Sig->Scale(sig_scale);
+  int sig_scale = 1;
 
   lg->AddEntry(Data, "Data", "lp");
-  lg->AddEntry(Sig, Form("signal #times %i",sig_scale), "l");
 
   double sumYields = 0.;
 
@@ -129,6 +127,11 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
     sumYields += h_tmp->Integral();
   } cout<<endl<<"total bkg yields: "<<sumYields<<endl; cout<<endl<<"data yields: "<<Data->Integral()<<endl<<endl;
 
+  if(sumYields > Sig->Integral()) sig_scale = (int)std::round(0.5*sumYields/Sig->Integral());
+  Sig->Scale(sig_scale);
+
+  lg->AddEntry(Sig, Form("signal #times %i",sig_scale), "l");
+
   double y_max = 0.;
   double data_max = Data->GetMaximum(); cout<<"data y axis maximum: "<<data_max<<endl;
   double bkg_max = Bkg->GetMaximum(); cout<<"bkg y axis maximum: "<<bkg_max<<endl;
@@ -137,7 +140,7 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
 
   TH1F *Bkg_err = (TH1F*)Bkg->GetStack()->Last()->Clone("Bkg_error");
   Bkg_err->SetMarkerSize(0);
-  Bkg_err->SetFillStyle(3001);
+  Bkg_err->SetFillStyle(3254);
   Bkg_err->SetFillColor(kBlack);
 
   //Bkg->Draw("hist pfc");
@@ -153,11 +156,11 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   lg->Draw("same");
 
   Bkg->GetXaxis()->SetTitle(varName.data());
-  Bkg->GetYaxis()->SetRangeUser(0., y_max*1.3);
-  Data->GetYaxis()->SetRangeUser(0., y_max*1.3);
-  Sig->GetYaxis()->SetRangeUser(0., y_max*1.3);
+  Bkg->GetYaxis()->SetRangeUser(0., y_max*1.8);
+  Data->GetYaxis()->SetRangeUser(0., y_max*1.8);
+  Sig->GetYaxis()->SetRangeUser(0., y_max*1.8);
 
-  Bkg->SetMaximum(y_max*1.3);
+  Bkg->SetMaximum(y_max*1.8);
 
   ATLASLabel(0.19,0.88,"Internal");
   myText(0.19, 0.81, 1, "#sqrt{s}= 13 TeV, 139 fb^{-1}");

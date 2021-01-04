@@ -3,10 +3,12 @@
 void SR_pass(){
   gStyle->SetErrorX(0.5);
 
-  string cfSuffix = "2taus";
+  //string cfSuffix = "2taus";
+  string cfSuffix = "2taus_BDTSW";
   string config = "config_";
   config.append(cfSuffix);
-  int nBins = 20;
+  //int nBins = 20;
+  int nBins = 30;
 
   map<TString,TString> samples_id;
   samples_id["data"] = "data";
@@ -144,6 +146,8 @@ void SR_pass(){
       ch.Add(filepath);
     }
 
+    if(ch.GetEntries()==0) { cout<<sample<<" 0 entry"<<endl; continue; }
+
     ROOT::RDataFrame df(ch, {"m_yy"});
 
     TH1F h_sr_fail("h_sr_fail", "", nBins, varMin, varMax); h_sr_fail.Sumw2();
@@ -213,10 +217,12 @@ void SR_pass(){
 
   TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2();
   for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
+  double sumBkgYield = 0.;
+  for(auto h : srpassHists) sumBkgYield += h.second->Integral();
   for(auto h : srpassHists){
     TString h_name = h.first;
     TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
-    if(h_tmp->Integral() > 0.02*srpassHists["data"]->Integral()) continue;
+    if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
     ignoreList.push_back(h_name);
     h_minorBkgs.Add(h_tmp);
   }
@@ -226,4 +232,23 @@ void SR_pass(){
 
   /****** draw hist stack plot ******/
   stackHist(srpassHists, obsVar, "VR", cfSuffix, ignoreList);
+
+  /****** save histograms ******/
+  TString outputDir = "WSInputs/";
+  for(auto h : srpassHists){
+    TString hname = h.first;
+    if(hname == "others" || hname == "Sherpa2_diphoton") continue;
+
+    TH1F *hist = h.second;
+    TH1F *htmp = (TH1F*)hist->Clone(obsVar.data());
+
+    TFile *f;
+    if(hname!="data"&&hname!="yyjj_fake") f = new TFile(outputDir+samples_id[hname]+"_"+hname+".root", "recreate");
+    else f = new TFile(outputDir+hname+".root", "recreate");
+
+    f->cd();
+    htmp->Write();
+
+    delete f;
+  }
 }

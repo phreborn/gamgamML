@@ -88,6 +88,14 @@ void getVarAndRange(std::string cfstring, string &name, double &min, double &max
   max = std::atof(ts_vec.at(2).Data());
 }
 
+void fillHists(std::map<TString, TH1F*> &histVec, ROOT::RDataFrame &df, std::string cuts, std::string varname, TString sample, TString region, double *bins){
+  TH1F hist("h_"+region, "", (int)bins[0], bins[1]/1000, bins[2]/1000);
+  hist.Sumw2();
+  auto df_cut = df.Filter(cuts);
+  df_cut.Foreach([&hist] (double var, double w) { hist.Fill(var/1000, w); }, {varname.data(), "wt"});
+  histVec[sample] = (TH1F*) hist.Clone(sample+"_"+region); std::cout<<sample<<" in "<<region<<": "<<histVec[sample]->Integral()<<endl;
+}
+
 //map<TString, EColor> colors;
 map<TString, TString> colors;
 

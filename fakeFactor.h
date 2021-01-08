@@ -99,7 +99,7 @@ void fillHists(std::map<TString, TH1F*> &histVec, ROOT::RDataFrame &df, std::str
 //map<TString, EColor> colors;
 map<TString, TString> colors;
 
-void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, string cfSuffix, std::vector<TString> igList = {""}){
+void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, string cfSuffix, bool logy, std::vector<TString> igList = {""}){
   cout<<endl<<endl<<"drawing stack hist.."<<endl<<endl;
 
   gStyle->SetErrorX(0.5);
@@ -115,6 +115,7 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
 
   lg->AddEntry(Data, "Data", "lp");
 
+  double yieldMin = std::pow(10, 15);
   double sumYields = 0.;
 
   THStack *Bkg = new THStack("hs_CR_failID", "");
@@ -132,6 +133,7 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
     Bkg->Add(h_tmp);
     TString name_tmp = h_name.ReplaceAll("_", " ");
     lg->AddEntry(h_tmp, name_tmp, "f");
+    if(h_tmp->Integral()<yieldMin) yieldMin = h_tmp->Integral();
     sumYields += h_tmp->Integral();
   } cout<<endl<<"total bkg yields: "<<sumYields<<endl; cout<<endl<<"data yields: "<<Data->Integral()<<endl<<endl;
 
@@ -163,16 +165,21 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   lg->SetBorderSize(0);
   lg->Draw("same");
 
-  Bkg->GetXaxis()->SetTitle(varName.data());
-  Bkg->GetYaxis()->SetRangeUser(0., y_max*1.8);
-  Data->GetYaxis()->SetRangeUser(0., y_max*1.8);
-  Sig->GetYaxis()->SetRangeUser(0., y_max*1.8);
+  double y_min = yieldMin/10.0;
+  double yScale = 1.8*(logy? 100.0 : 1.0);
 
-  Bkg->SetMaximum(y_max*1.8);
+  Bkg->GetXaxis()->SetTitle(varName.data());
+  Bkg->GetYaxis()->SetRangeUser(y_min, y_max*yScale);
+  Data->GetYaxis()->SetRangeUser(y_min, y_max*yScale);
+  Sig->GetYaxis()->SetRangeUser(y_min, y_max*yScale);
+
+  Bkg->SetMaximum(y_max*yScale);
 
   ATLASLabel(0.19,0.88,"Internal");
   myText(0.19, 0.81, 1, "#sqrt{s}= 13 TeV, 139 fb^{-1}");
   myText(0.19, 0.76, 1, "DiHiggs, #it{#gamma#gamma}+#it{#tau_{h}#tau_{h}}");
+
+  if(logy) c->SetLogy();
 
   c->Update();
   TString pngName = varName.data();

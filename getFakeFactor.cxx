@@ -7,31 +7,31 @@ void getFakeFactor()
 
   TFile *f_out = new TFile("forSR_pass.root", "recreate");
 
-  string config = "config2Tau";
+  string config = "config_2taus";
   //string config = "configLepTau";
   double maxFFVar = 120000;
   int nBins = 20;
 
-  colors["Sherpa2_diphoton_myy_90_175"] = (EColor) (kRed);
-  colors["MGPy8_ttgammagamma_allhad"] = (EColor) (kOrange+14);
-  colors["MGPy8_ttgammagamma_noallhad"] = (EColor) (kOrange+16);
-  colors["PowhegPy8EG_NNPDF30_VBFH125"] = (EColor) (kAzure+2);
-  colors["PowhegPy8_NNLOPS_ggH125"] = (EColor) (kAzure);
-  colors["PowhegPy8_WmH125J"] = (EColor) (kAzure+4);
-  colors["PowhegPy8_WpH125J"] = (EColor) (kAzure+6);
-  colors["PowhegPy8_ZH125J"] = (EColor) (kAzure+8);
-  colors["PowhegPy8_bbH125"] = (EColor) (kAzure+10);
-  colors["PowhegPy8_ggZH125"] = (EColor) (kAzure+11);
-  colors["PowhegPy8_ttH125_fixweight"] = (EColor) (kAzure+12);
-  colors["Sherpa_224_eegammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange);
-  colors["Sherpa_224_enugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+2);
-  colors["Sherpa_224_mumugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+4);
-  colors["Sherpa_224_munugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+6);
-  colors["Sherpa_224_nunugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+8);
-  colors["Sherpa_224_taunugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+10);
-  colors["Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"] = (EColor) (kOrange+12);
-  colors["aMCnloPy8_tHjb125_4fl_shw_fix"] = (EColor) (kAzure+14);
-  colors["aMCnloPy8_tWH125"] = (EColor) (kAzure+16);
+  colors["Sherpa2_diphoton"            ] = "#CC3333";
+  colors["MGPy8_ttgamgam_allhad"       ] = "#";
+  colors["MGPy8_ttgamgam_noallhad"     ] = "#";
+  colors["PowhegPy8EG_NNPDF30_VBF"     ] = "#";
+  colors["PowhegPy8_NNLOPS_ggH"        ] = "#";
+  colors["PowhegPy8_WmH"               ] = "#";
+  colors["PowhegPy8_WpH"               ] = "#";
+  colors["PowhegPy8_ZH"                ] = "#CC3366";
+  colors["PowhegPy8_bbH"               ] = "#";
+  colors["PowhegPy8_ggZH"              ] = "#663366";
+  colors["PowhegPy8_ttH_fixweight"     ] = "#";
+  colors["Sherpa_eegamgam"             ] = "#";
+  colors["Sherpa_enugamgam"            ] = "#";
+  colors["Sherpa_mumugamgam"           ] = "#";
+  colors["Sherpa_munugamgam"           ] = "#";
+  colors["Sherpa_nunugamgam"           ] = "#";
+  colors["Sherpa_taunugamgam"          ] = "#666666";
+  colors["Sherpa_tautaugamgam"         ] = "#CCCCCC";
+  colors["aMCnloPy8_tHjb_4fl_shw_fix"  ] = "#";
+  colors["aMCnloPy8_tWH"               ] = "#";
 
   map<TString,TString> samples_id;
   //samples_id["vbf"] = "346214";
@@ -41,26 +41,26 @@ void getFakeFactor()
   samples_id["data"] = "data";
   samples_id["yy2L"] = "450698";
 
-  samples_id["Sherpa2_diphoton_myy_90_175"                 ]="364352"; 
-  samples_id["MGPy8_ttgammagamma_allhad"                   ]="345869"; 
-  samples_id["MGPy8_ttgammagamma_noallhad"                 ]="345868"; 
-  samples_id["PowhegPy8EG_NNPDF30_VBFH125"                 ]="346214"; 
-  samples_id["PowhegPy8_NNLOPS_ggH125"                     ]="343981"; 
-  samples_id["PowhegPy8_WmH125J"                           ]="345317"; 
-  samples_id["PowhegPy8_WpH125J"                           ]="345318"; 
-  samples_id["PowhegPy8_ZH125J"                            ]="345319"; 
-  samples_id["PowhegPy8_bbH125"                            ]="345315"; 
-  samples_id["PowhegPy8_ggZH125"                           ]="345061"; 
-  samples_id["PowhegPy8_ttH125_fixweight"                  ]="346525"; 
-  samples_id["Sherpa_224_eegammagamma_LO_pty_17_myy_80"    ]="364862"; 
-  samples_id["Sherpa_224_enugammagamma_LO_pty_17_myy_80"   ]="364874"; 
-  samples_id["Sherpa_224_mumugammagamma_LO_pty_17_myy_80"  ]="364865"; 
-  samples_id["Sherpa_224_munugammagamma_LO_pty_17_myy_80"  ]="364877"; 
-  samples_id["Sherpa_224_nunugammagamma_LO_pty_17_myy_80"  ]="364871"; 
-  samples_id["Sherpa_224_taunugammagamma_LO_pty_17_myy_80" ]="364880"; 
-  samples_id["Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"]="364868"; 
-  samples_id["aMCnloPy8_tHjb125_4fl_shw_fix"               ]="346188"; 
-  samples_id["aMCnloPy8_tWH125"                            ]="346486";
+  samples_id["Sherpa2_diphoton"                            ]="364352";
+  samples_id["MGPy8_ttgamgam_allhad"                       ]="345869";
+  samples_id["MGPy8_ttgamgam_noallhad"                     ]="345868";
+  samples_id["PowhegPy8EG_NNPDF30_VBF"                     ]="346214";
+  samples_id["PowhegPy8_NNLOPS_ggH"                        ]="343981";
+  samples_id["PowhegPy8_WmH"                               ]="345317";
+  samples_id["PowhegPy8_WpH"                               ]="345318";
+  samples_id["PowhegPy8_ZH"                                ]="345319";
+  samples_id["PowhegPy8_bbH"                               ]="345315";
+  samples_id["PowhegPy8_ggZH"                              ]="345061";
+  samples_id["PowhegPy8_ttH_fixweight"                     ]="346525";
+  samples_id["Sherpa_eegamgam"                             ]="364862";
+  samples_id["Sherpa_enugamgam"                            ]="364874";
+  samples_id["Sherpa_mumugamgam"                           ]="364865";
+  samples_id["Sherpa_munugamgam"                           ]="364877";
+  samples_id["Sherpa_nunugamgam"                           ]="364871";
+  samples_id["Sherpa_taunugamgam"                          ]="364880";
+  samples_id["Sherpa_tautaugamgam"                         ]="364868";
+  samples_id["aMCnloPy8_tHjb_4fl_shw_fix"                  ]="346188";
+  samples_id["aMCnloPy8_tWH"                               ]="346486";
 
   string sDir;
   readConfigFile(config.data(), "inputPath", sDir);
@@ -180,7 +180,7 @@ void getFakeFactor()
   for(auto hist : crfailHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
-    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    if(hist.first == "Sherpa2_diphoton") continue;
     h_CR_fail->Add(hist.second, -1);
     cout<<hist.first<<" : "<<hist.second->Integral()<<endl;
   }
@@ -189,7 +189,7 @@ void getFakeFactor()
   for(auto hist : crpassHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
-    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    if(hist.first == "Sherpa2_diphoton") continue;
     h_CR_pass->Add(hist.second, -1);
   }
 
@@ -250,8 +250,8 @@ void getFakeFactor()
   //h_FF_rb_tt->Draw("e");
 
   /* ====== FF from MC yy comparison between SR and VR ====== */
-  TH1F *h_yy_cr_pass = (TH1F*)crpassHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_cr_pass");
-  TH1F *h_yy_cr_fail = (TH1F*)crfailHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_cr_fail");
+  TH1F *h_yy_cr_pass = (TH1F*)crpassHists["Sherpa2_diphoton"]->Clone("yy_cr_pass");
+  TH1F *h_yy_cr_fail = (TH1F*)crfailHists["Sherpa2_diphoton"]->Clone("yy_cr_fail");
   h_yy_cr_pass->Sumw2();
   h_yy_cr_fail->Sumw2();
   auto h_yy_cr_pass_rb = h_yy_cr_pass->Rebin(length-1, "rebin", x_rebin);
@@ -262,8 +262,8 @@ void getFakeFactor()
   h_FF_yy_cr_rb->SetLineColor(kBlue);
   h_FF_yy_cr_rb->SetMarkerSize(0);
 
-  TH1F *h_yy_sr_pass = (TH1F*)srpassHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_sr_pass");
-  TH1F *h_yy_sr_fail = (TH1F*)srfailHists["Sherpa2_diphoton_myy_90_175"]->Clone("yy_sr_fail");
+  TH1F *h_yy_sr_pass = (TH1F*)srpassHists["Sherpa2_diphoton"]->Clone("yy_sr_pass");
+  TH1F *h_yy_sr_fail = (TH1F*)srfailHists["Sherpa2_diphoton"]->Clone("yy_sr_fail");
   h_yy_sr_pass->Sumw2();
   h_yy_sr_fail->Sumw2();
   auto h_yy_sr_pass_rb = h_yy_sr_pass->Rebin(length-1, "rebin", x_rebin);
@@ -283,7 +283,7 @@ void getFakeFactor()
   for(auto hist : srfailHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
-    if(hist.first == "Sherpa2_diphoton_myy_90_175") continue;
+    if(hist.first == "Sherpa2_diphoton") continue;
     h_SR_fail->Add(hist.second, -1);
   } cout<<"SR failID (MC subtracted):"<<h_SR_fail->Integral()<<endl;
   h_SR_fail->Sumw2();

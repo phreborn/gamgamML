@@ -1,41 +1,43 @@
-Sherpa2_diphoton_myy_90_175
-MGPy8_ttgammagamma_allhad
-MGPy8_ttgammagamma_noallhad
-PowhegPy8EG_NNPDF30_VBFH125
-PowhegPy8_NNLOPS_ggH125
-PowhegPy8_WmH125J
-PowhegPy8_WpH125J
-PowhegPy8_ZH125J
-PowhegPy8_bbH125
-PowhegPy8_ggZH125
-PowhegPy8_ttH125_fixweight
-Sherpa_224_eegammagamma_LO_pty_17_myy_80
-Sherpa_224_enugammagamma_LO_pty_17_myy_80
-Sherpa_224_mumugammagamma_LO_pty_17_myy_80
-Sherpa_224_munugammagamma_LO_pty_17_myy_80
-Sherpa_224_nunugammagamma_LO_pty_17_myy_80
-Sherpa_224_taunugammagamma_LO_pty_17_myy_80
-Sherpa_224_tautaugammagamma_LO_pty_17_myy_80
-aMCnloPy8_tHjb125_4fl_shw_fix
-aMCnloPy8_tWH125
+Sherpa2_diphoton_myy_90_175"
+MGPy8_ttgammagamma_allhad"
+MGPy8_ttgammagamma_noallhad"
+PowhegPy8EG_NNPDF30_VBFH125"
+PowhegPy8_NNLOPS_ggH125"
+PowhegPy8_WmH125J"
+PowhegPy8_WpH125J"
+PowhegPy8_ZH125J"
+PowhegPy8_bbH125"
+PowhegPy8_ggZH125"
+PowhegPy8_ttH125_fixweight"
+Sherpa_224_eegammagamma_LO_pty_17_myy_80"
+Sherpa_224_enugammagamma_LO_pty_17_myy_80"
+Sherpa_224_mumugammagamma_LO_pty_17_myy_80"
+Sherpa_224_munugammagamma_LO_pty_17_myy_80"
+Sherpa_224_nunugammagamma_LO_pty_17_myy_80"
+Sherpa_224_taunugammagamma_LO_pty_17_myy_80"
+Sherpa_224_tautaugammagamma_LO_pty_17_myy_80"
+aMCnloPy8_tHjb125_4fl_shw_fix"
+aMCnloPy8_tWH125"
 
-Sherpa2_diphoton_myy_90_175
-MGPy8_ttgamgam_allhad
-MGPy8_ttgamgam_noallhad
-PowhegPy8EG_NNPDF30_VBFH125
-PowhegPy8_NNLOPS_ggH125
-PowhegPy8_WmH125J
-PowhegPy8_WpH125J
-PowhegPy8_ZH125J
-PowhegPy8_bbH125
-PowhegPy8_ggZH125
-PowhegPy8_ttH125_fixweight
-Sherpa_eegamgam_LO_pty_17_myy_80
-Sherpa_enugamgam_LO_pty_17_myy_80
-Sherpa_mumugamgam_LO_pty_17_myy_80
-Sherpa_munugamgam_LO_pty_17_myy_80
-Sherpa_nunugamgam_LO_pty_17_myy_80
-Sherpa_taunugamgam_LO_pty_17_myy_80
-Sherpa_tautaugamgam_LO_pty_17_myy_80
-aMCnloPy8_tHjb125_4fl_shw_fix
-aMCnloPy8_tWH125
+samples_id["data"] = "data";
+samples_id["yy2L"] = "450698";
+samples_id["Sherpa2_diphoton"                            ]="364352";
+samples_id["MGPy8_ttgamgam_allhad"                       ]="345869";
+samples_id["MGPy8_ttgamgam_noallhad"                     ]="345868";
+samples_id["PowhegPy8EG_NNPDF30_VBF"                     ]="346214";
+samples_id["PowhegPy8_NNLOPS_ggH"                        ]="343981";
+samples_id["PowhegPy8_WmH"                               ]="345317";
+samples_id["PowhegPy8_WpH"                               ]="345318";
+samples_id["PowhegPy8_ZH"                                ]="345319";
+samples_id["PowhegPy8_bbH"                               ]="345315";
+samples_id["PowhegPy8_ggZH"                              ]="345061";
+samples_id["PowhegPy8_ttH_fixweight"                     ]="346525";
+samples_id["Sherpa_eegamgam"                             ]="364862";
+samples_id["Sherpa_enugamgam"                            ]="364874";
+samples_id["Sherpa_mumugamgam"                           ]="364865";
+samples_id["Sherpa_munugamgam"                           ]="364877";
+samples_id["Sherpa_nunugamgam"                           ]="364871";
+samples_id["Sherpa_taunugamgam"                          ]="364880";
+samples_id["Sherpa_tautaugamgam"                         ]="364868";
+samples_id["aMCnloPy8_tHjb_4fl_shw_fix"                  ]="346188";
+samples_id["aMCnloPy8_tWH"                               ]="346486";

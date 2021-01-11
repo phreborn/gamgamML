@@ -4,11 +4,12 @@ void SR_pass(){
   gStyle->SetErrorX(0.5);
 
   //string cfSuffix = "2taus";
-  string cfSuffix = "2taus_BDTSW";
+  //string cfSuffix = "2taus_1binSB";
+  string cfSuffix = "2taus_LCutSR";
   string config = "config_";
   config.append(cfSuffix);
   //int nBins = 20;
-  int nBins = 30;
+  int nBins = 1;
 
   map<TString,TString> samples_id;
   samples_id["data"] = "data";
@@ -172,15 +173,15 @@ void SR_pass(){
     TH1F h_sr_fail_x_FF_upFF("h_sr_fail_x_FF_upFF", "", nBins, varMin, varMax);
 
     if(sample!="yy2L"&&sample!="Sherpa2_diphoton"){
-      auto df_sr_pass = df.Filter(srfailAllCut);
+      auto df_sr_fail_x_FF = df.Filter(srfailAllCut);
 
-      df_sr_pass.Foreach([&h_FF, &h_sr_fail_x_FF_nom](double var, double tau0_pt, double tau1_pt, double w){
+      df_sr_fail_x_FF.Foreach([&h_FF, &h_sr_fail_x_FF_nom](double var, double tau0_pt, double tau1_pt, double w){
         double ff0 = h_FF->GetBinContent(h_FF->FindBin(tau0_pt/1000));
         double ff1 = h_FF->GetBinContent(h_FF->FindBin(tau1_pt/1000));
         h_sr_fail_x_FF_nom.Fill(var/1000, w*ff0*ff1);
       },{obsVar.data(), "tau0_pt", "tau1_pt", "wt"});
 
-      df_sr_pass.Foreach([&h_FF, &h_sr_fail_x_FF_upFF](double var, double tau0_pt, double tau1_pt, double w){
+      df_sr_fail_x_FF.Foreach([&h_FF, &h_sr_fail_x_FF_upFF](double var, double tau0_pt, double tau1_pt, double w){
         double ff0 = h_FF->GetBinError(h_FF->FindBin(tau0_pt/1000))+h_FF->GetBinContent(h_FF->FindBin(tau0_pt/1000));
         double ff1 = h_FF->GetBinError(h_FF->FindBin(tau1_pt/1000))+h_FF->GetBinContent(h_FF->FindBin(tau1_pt/1000));
         h_sr_fail_x_FF_upFF.Fill(var/1000, w*ff0*ff1);
@@ -218,9 +219,10 @@ void SR_pass(){
   TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2();
   for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
   double sumBkgYield = 0.;
-  for(auto h : srpassHists) sumBkgYield += h.second->Integral();
+  for(auto h : srpassHists) { if(h.first=="data" || h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); }
   for(auto h : srpassHists){
     TString h_name = h.first;
+    if(h_name=="yy2L") continue; // needed!!
     TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
     if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
     ignoreList.push_back(h_name);
@@ -231,7 +233,7 @@ void SR_pass(){
   colors["others"] = "#FF6600";
 
   /****** draw hist stack plot ******/
-  stackHist(srpassHists, obsVar, "VR", cfSuffix, ignoreList);
+  stackHist(srpassHists, obsVar, "VR", cfSuffix, false, ignoreList);
 
   /****** save histograms ******/
   TString outputDir = "WSInputs/";
@@ -243,8 +245,7 @@ void SR_pass(){
     TH1F *htmp = (TH1F*)hist->Clone(obsVar.data());
 
     TFile *f;
-    if(hname!="data"&&hname!="yyjj_fake") f = new TFile(outputDir+samples_id[hname]+"_"+hname+".root", "recreate");
-    else f = new TFile(outputDir+hname+".root", "recreate");
+    f = new TFile(outputDir+hname+".root", "recreate");
 
     f->cd();
     htmp->Write();

@@ -32,7 +32,7 @@ srfailID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_fla
 #passID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
 #failID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
 
-#crpassID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+#crpassID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
 #crfailID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
 
 crpassID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25))
@@ -43,3 +43,4 @@ blindSel: m_yy/1000<120 || m_yy/1000>130
 
 #m_yy/1000
 mainVar: m_yy, 105, 160
+FFDependVar: tau0_pt, 20, 120

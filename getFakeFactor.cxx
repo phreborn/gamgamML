@@ -5,30 +5,30 @@ void getFakeFactor()
   gStyle->SetErrorX(0.5);
   gStyle->SetPalette(kOcean);
 
-  TFile *f_out = new TFile("forSR_pass.root", "recreate");
-
   string config = "config_2taus";
   //string config = "configLepTau";
   double maxFFVar = 120000;
   int nBins = 20;
+  bool deriveFF = true;
 
   colors["Sherpa2_diphoton"            ] = "#CC3333";
   colors["MGPy8_ttgamgam_allhad"       ] = "#";
   colors["MGPy8_ttgamgam_noallhad"     ] = "#";
-  colors["PowhegPy8EG_NNPDF30_VBF"     ] = "#";
-  colors["PowhegPy8_NNLOPS_ggH"        ] = "#";
+  colors["PowhegPy8EG_NNPDF30_VBF"     ] = "#CCCC99";
+  colors["PowhegPy8_NNLOPS_ggH"        ] = "#CC3399";
   colors["PowhegPy8_WmH"               ] = "#";
   colors["PowhegPy8_WpH"               ] = "#";
   colors["PowhegPy8_ZH"                ] = "#CC3366";
   colors["PowhegPy8_bbH"               ] = "#";
   colors["PowhegPy8_ggZH"              ] = "#663366";
   colors["PowhegPy8_ttH_fixweight"     ] = "#";
-  colors["Sherpa_eegamgam"             ] = "#";
-  colors["Sherpa_enugamgam"            ] = "#";
+  colors["Sherpa_eegamgam"             ] = "#CCCC99";
+  colors["Sherpa_enugamgam"            ] = "#FFFF66";
   colors["Sherpa_mumugamgam"           ] = "#";
-  colors["Sherpa_munugamgam"           ] = "#";
+  colors["Sherpa_munugamgam"           ] = "#99CC00";
   colors["Sherpa_nunugamgam"           ] = "#";
-  colors["Sherpa_taunugamgam"          ] = "#666666";
+  //colors["Sherpa_taunugamgam"          ] = "#666666";
+  colors["Sherpa_taunugamgam"          ] = "#009966";
   colors["Sherpa_tautaugamgam"         ] = "#CCCCCC";
   colors["aMCnloPy8_tHjb_4fl_shw_fix"  ] = "#";
   colors["aMCnloPy8_tWH"               ] = "#";
@@ -112,6 +112,17 @@ void getFakeFactor()
   readConfigFile(config.data(), "srfailID", srfailCut);
   readConfigFile(config.data(), "blindSel", blindCut);
 
+  string mainVar;
+  readConfigFile(config.data(), "FFDependVar", mainVar);
+
+  string obsVar;
+  double varMin, varMax;
+  getVarAndRange(mainVar, obsVar, varMin, varMax); cout<<"variable to draw: "<<obsVar<<" "<<varMin<<" "<<varMax<<endl;
+  double binning[3];
+  binning[0] = nBins;
+  binning[1] = varMin;
+  binning[2] = varMax;
+
   map<TString, TH1F*> srpassHists;
   map<TString, TH1F*> srfailHists;
   map<TString, TH1F*> crpassHists;
@@ -171,7 +182,43 @@ void getFakeFactor()
 //    cout<<"count: "<<h.Integral()<<endl;
   }
 
-  //stackHist(crfailHists, "CR");
+  /****** ignore and merge bkgs ******/
+  if(!deriveFF)
+  {
+    std::vector<TString> ignoreList;
+    TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2();
+    double sumBkgYield = 0.;
+
+    ignoreList.push_back("Sherpa2_diphoton");
+
+    for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
+    for(auto h : crfailHists) { if(h.first=="data"||h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); } // data yy+jets included
+    for(auto h : crfailHists){
+      TString h_name = h.first;
+      if(h_name=="yy2L") continue; // needed!!
+      TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
+      double h_int = h_tmp->Integral(); cout<<h_name<<"/sumBkgYield: "<<h_int<<" "<<h_int/sumBkgYield<<endl;
+      if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
+      ignoreList.push_back(h_name);
+      h_minorBkgs.Add(h_tmp);
+    }
+    crfailHists["others"] = (TH1F*)h_minorBkgs.Clone("others_CR_failID");
+    colors["others"] = "#FF6600";
+
+    //stackHist(crfailHists, "tau0_pt", "CRfail", "2taus", true, ignoreList);
+
+    ignoreList.clear();
+    ignoreList.push_back("Sherpa2_diphoton");
+    ignoreAndMerge(crpassHists, ignoreList, "CR_passID", colors, binning);
+
+    stackHist(crpassHists, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+
+    //ignoreList.clear();
+    //ignoreList.push_back("Sherpa2_diphoton");
+    //ignoreAndMerge(srfailHists, ignoreList, "SR_failID", colors, binning);
+
+    //stackHist(srfailHists, "tau0_pt", "SRfail", "2taus", true, ignoreList);
+  }
 
 
   /* ====== Data Driven FF ====== */
@@ -184,14 +231,17 @@ void getFakeFactor()
     h_CR_fail->Add(hist.second, -1);
     cout<<hist.first<<" : "<<hist.second->Integral()<<endl;
   }
+  cout<<"CR failID (MC subtracted): "<<h_CR_fail->Integral()<<endl;
 
-  TH1F *h_CR_pass = (TH1F*) crpassHists["data"]->Clone("CR_passID");
+  TH1F *h_CR_pass = (TH1F*) crpassHists["data"]->Clone("CR_passID"); cout<<"data in CR_passID : "<<h_CR_pass->Integral()<<endl;
   for(auto hist : crpassHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
     if(hist.first == "Sherpa2_diphoton") continue;
     h_CR_pass->Add(hist.second, -1);
+    cout<<hist.first<<" : "<<hist.second->Integral()<<endl;
   }
+  cout<<"CR passID (MC subtracted): "<<h_CR_pass->Integral()<<endl;
 
   h_CR_fail->Sumw2();
   h_CR_pass->Sumw2();
@@ -199,8 +249,10 @@ void getFakeFactor()
   TH1F *h_FF = (TH1F*) h_CR_pass->Clone("fakeFactor");
   h_FF->Divide(h_CR_fail);
 
-  cout<<"CR passID (MC subtracted): "<<h_CR_pass->Integral()<<endl;
-  cout<<"CR failID (MC subtracted): "<<h_CR_fail->Integral()<<endl;
+  //cout<<"bin1: "<<h_CR_pass->Integral(1, 2)/h_CR_fail->Integral(1, 2)<<endl;
+  //cout<<"bin2: "<<h_CR_pass->Integral(3, 4)/h_CR_fail->Integral(3, 4)<<endl;
+  //cout<<"bin3: "<<h_CR_pass->Integral(5, 8)/h_CR_fail->Integral(5, 8)<<endl;
+  //cout<<"bin2: "<<h_CR_pass->Integral(9, 20)/h_CR_fail->Integral(9, 20)<<endl;
 
   //h_CR_fail->Draw();
   //h_CR_pass->Draw("same");
@@ -241,7 +293,7 @@ void getFakeFactor()
   h_FF_rb->SetMaximum(0.3);
   h_FF_rb->SetMarkerSize(0);
   h_FF_rb->SetLineColor(kBlue);
-  h_FF_rb->Draw("e1");
+  //h_FF_rb->Draw("e1");
 
   //TH1F *h_FF_rb_tt = (TH1F*)h_FF_rb->Clone("FF_rb_tautau");
   //h_FF_rb_tt->Sumw2();
@@ -288,6 +340,8 @@ void getFakeFactor()
   } cout<<"SR failID (MC subtracted):"<<h_SR_fail->Integral()<<endl;
   h_SR_fail->Sumw2();
   //h_SR_fail->Draw("e");
+
+  TFile *f_out = new TFile("forSR_pass.root", "recreate");
 
   f_out->cd();
   h_FF_rb->Write();

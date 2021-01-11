@@ -99,6 +99,25 @@ void fillHists(std::map<TString, TH1F*> &histVec, ROOT::RDataFrame &df, std::str
 //map<TString, EColor> colors;
 map<TString, TString> colors;
 
+void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignoreList, TString region, map<TString, TString> &colors, double *binning){
+  TH1F h_minorBkgs("minor_bkgs", "", binning[0], binning[1], binning[2]); h_minorBkgs.Sumw2();
+  double sumBkgYield = 0.;
+
+  for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
+  for(auto h : hists) { if(h.first=="data"||h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); } cout<<endl<<"sumBkgYield(exclude yy+jets): "<<sumBkgYield<<endl<<endl;
+  for(auto h : hists){
+    TString h_name = h.first;
+    if(h_name=="yy2L") continue; // needed!!
+    TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
+    double h_int = h_tmp->Integral(); cout<<h_name<<": "<<h_int/sumBkgYield<<endl;
+    if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
+    ignoreList.push_back(h_name);
+    h_minorBkgs.Add(h_tmp);
+  }
+  hists["others"] = (TH1F*)h_minorBkgs.Clone("others_"+region);
+  colors["others"] = "#FF6600";
+}
+
 void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, string cfSuffix, bool logy, std::vector<TString> igList = {""}){
   cout<<endl<<endl<<"drawing stack hist.."<<endl<<endl;
 
@@ -165,7 +184,7 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   lg->SetBorderSize(0);
   lg->Draw("same");
 
-  double y_min = yieldMin/10.0;
+  double y_min = logy? yieldMin/10.0 : 0.; cout<<"minimum bkg yield: "<<yieldMin<<endl;
   double yScale = 1.8*(logy? 100.0 : 1.0);
 
   Bkg->GetXaxis()->SetTitle(varName.data());
@@ -186,4 +205,6 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   pngName += "_"+rg+"_";
   pngName += cfSuffix.data();
   c->SaveAs(pngName+".png");
+
+  //delete c;
 }

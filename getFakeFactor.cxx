@@ -5,11 +5,12 @@ void getFakeFactor()
   gStyle->SetErrorX(0.5);
   gStyle->SetPalette(kOcean);
 
-  string config = "config_2taus";
+  //string config = "config_2taus";
+  string config = "config_2taus_CRtau0Fail";
   //string config = "configLepTau";
   double maxFFVar = 120000;
   int nBins = 20;
-  bool deriveFF = false;
+  bool deriveFF = true;
 
   colors["Sherpa2_diphoton"            ] = "#CC3333";
   colors["MGPy8_ttgamgam_allhad"       ] = "#";
@@ -312,7 +313,7 @@ void getFakeFactor()
   h_FF_rb->SetMaximum(0.3);
   h_FF_rb->SetMarkerSize(0);
   h_FF_rb->SetLineColor(kBlue);
-  //h_FF_rb->Draw("e1");
+  h_FF_rb->Draw("e1");
 
   //TH1F *h_FF_rb_tt = (TH1F*)h_FF_rb->Clone("FF_rb_tautau");
   //h_FF_rb_tt->Sumw2();

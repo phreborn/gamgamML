@@ -2,9 +2,12 @@
 inputPath:/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Dec_30/
 
 nomSel: cutflow>=15
-srSel: pt_yy/1000>100 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40
+#srSel: pt_yy/1000>100 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40
+#srSel: pt_yy/1000>50 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25))
+#ptyy100->50, tau0pt40->25
+srSel: pt_yy/1000>50 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>25 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25))
 #crSel: pt_yy/1000<100 && n_tau==2
-crSel: pt_yy/1000<100 && n_tau==2 && ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25))
+crSel: pt_yy/1000<50 && n_tau==2 && ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25))
 #vrSel: pt_yy/1000>100 && tau0_charge*tau1_charge>0
 
 #nomSel: met_TST/1000>30 && m_tautau/1000<130 && n_tau==2 && tau0_pt/1000>40 && pt_yy/1000>100

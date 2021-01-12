@@ -9,7 +9,7 @@ void getFakeFactor()
   //string config = "configLepTau";
   double maxFFVar = 120000;
   int nBins = 20;
-  bool deriveFF = true;
+  bool deriveFF = false;
 
   colors["Sherpa2_diphoton"            ] = "#CC3333";
   colors["MGPy8_ttgamgam_allhad"       ] = "#";
@@ -182,37 +182,58 @@ void getFakeFactor()
 //    cout<<"count: "<<h.Integral()<<endl;
   }
 
+  double x_rebin[5] = {20, 30, 40, 60, maxFFVar/1000};
+  int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
+
   /****** ignore and merge bkgs ******/
   if(!deriveFF)
   {
     std::vector<TString> ignoreList;
-    TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2();
-    double sumBkgYield = 0.;
 
+    // CR failID
     ignoreList.push_back("Sherpa2_diphoton");
 
-    for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
-    for(auto h : crfailHists) { if(h.first=="data"||h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); } // data yy+jets included
-    for(auto h : crfailHists){
-      TString h_name = h.first;
-      if(h_name=="yy2L") continue; // needed!!
-      TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
-      double h_int = h_tmp->Integral(); cout<<h_name<<"/sumBkgYield: "<<h_int<<" "<<h_int/sumBkgYield<<endl;
-      if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
-      ignoreList.push_back(h_name);
-      h_minorBkgs.Add(h_tmp);
-    }
-    crfailHists["others"] = (TH1F*)h_minorBkgs.Clone("others_CR_failID");
-    colors["others"] = "#FF6600";
+    //TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2(); // a)
+    //double sumBkgYield = 0.;
+    //for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
+    //for(auto h : crfailHists) { if(h.first=="data"||h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); } // data yy+jets included
+    //for(auto h : crfailHists){
+    //  TString h_name = h.first;
+    //  if(h_name=="yy2L") continue; // needed!!
+    //  TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
+    //  double h_int = h_tmp->Integral(); cout<<h_name<<"/sumBkgYield: "<<h_int<<" "<<h_int/sumBkgYield<<endl;
+    //  if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
+    //  ignoreList.push_back(h_name);
+    //  h_minorBkgs.Add(h_tmp);
+    //}
+    //crfailHists["others"] = (TH1F*)h_minorBkgs.Clone("others_CR_failID");
+    //colors["others"] = "#FF6600";
 
     //stackHist(crfailHists, "tau0_pt", "CRfail", "2taus", true, ignoreList);
 
+    //std::map<TString, TH1F*> crfailHists_clone; // b) rebin
+    //cloneHistMap(crfailHists, crfailHists_clone);
+    //ignoreAndMerge(crfailHists_clone, ignoreList, "CR_failID", colors, binning, length, x_rebin);
+    //stackHist(crfailHists_clone, "tau0_pt", "CRfail", "2taus", true, ignoreList);
+
+
+    // CR passID
     ignoreList.clear();
     ignoreList.push_back("Sherpa2_diphoton");
-    ignoreAndMerge(crpassHists, ignoreList, "CR_passID", colors, binning);
 
-    stackHist(crpassHists, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+    std::map<TString, TH1F*> crpassHists_clone;
+    cloneHistMap(crpassHists, crpassHists_clone);
 
+    //ignoreAndMerge(crpassHists, ignoreList, "CR_passID", colors, binning); // a)
+    //stackHist(crpassHists, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+    ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning);
+    stackHist(crpassHists_clone, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+
+    //ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning, length, x_rebin); // b) rebin
+    //stackHist(crpassHists_clone, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+
+
+    //// SR failID
     //ignoreList.clear();
     //ignoreList.push_back("Sherpa2_diphoton");
     //ignoreAndMerge(srfailHists, ignoreList, "SR_failID", colors, binning);
@@ -222,7 +243,7 @@ void getFakeFactor()
 
 
   /* ====== Data Driven FF ====== */
-  TH1F *h_CR_fail = (TH1F*) crfailHists["data"]->Clone("CR_failID"); cout<<"data in CR_failID : "<<h_CR_fail->Integral()<<endl;
+  TH1F *h_CR_fail = (TH1F*) crfailHists["data"]->Clone("CR_failID"); cout<<endl<<"data in CR_failID : "<<h_CR_fail->Integral()<<endl;
   //h_CR_fail->Draw();
   for(auto hist : crfailHists){
     if(hist.first == "data") continue;
@@ -233,7 +254,7 @@ void getFakeFactor()
   }
   cout<<"CR failID (MC subtracted): "<<h_CR_fail->Integral()<<endl;
 
-  TH1F *h_CR_pass = (TH1F*) crpassHists["data"]->Clone("CR_passID"); cout<<"data in CR_passID : "<<h_CR_pass->Integral()<<endl;
+  TH1F *h_CR_pass = (TH1F*) crpassHists["data"]->Clone("CR_passID"); cout<<endl<<"data in CR_passID : "<<h_CR_pass->Integral()<<endl;
   for(auto hist : crpassHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
@@ -274,15 +295,13 @@ void getFakeFactor()
   //h_FF_1bin->Draw("e");
   //cout<<h_FF_1bin->GetBinError(1)<<endl;
 
-  double x_rebin[5] = {20, 30, 40, 60, maxFFVar/1000};
-  int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
   auto h_CR_fail_rb = h_CR_fail->Rebin(length-1, "rebin", x_rebin);
   auto h_CR_pass_rb = h_CR_pass->Rebin(length-1, "rebin", x_rebin);
   h_CR_fail_rb->Sumw2();
   h_CR_pass_rb->Sumw2();
   auto h_FF_rb = (TH1F*) h_CR_pass_rb->Clone("fakeFactor_rebin");
   h_FF_rb->Divide(h_CR_fail_rb);
-  int binNum = h_FF_rb->GetNbinsX();
+  int binNum = h_FF_rb->GetNbinsX(); cout<<endl<<binNum<<" bins"<<endl;
   for(int i = 1; i <= binNum; i++){
     cout<<i<<" bin pass:"<<h_CR_pass_rb->GetBinContent(i)<<" "<<h_CR_pass_rb->GetBinError(i)<<endl;
     cout<<i<<" bin fail:"<<h_CR_fail_rb->GetBinContent(i)<<" "<<h_CR_fail_rb->GetBinError(i)<<endl;
@@ -331,12 +350,13 @@ void getFakeFactor()
   //h_FF_yy_cr_rb->Draw("same e");
 
 
-  TH1F *h_SR_fail = (TH1F*) srfailHists["data"]->Clone("SR_failID"); cout<<"SR failID:"<<h_SR_fail->Integral()<<endl;
+  TH1F *h_SR_fail = (TH1F*) srfailHists["data"]->Clone("SR_failID"); cout<<endl<<"SR failID:"<<h_SR_fail->Integral()<<endl;
   for(auto hist : srfailHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
     if(hist.first == "Sherpa2_diphoton") continue;
     h_SR_fail->Add(hist.second, -1);
+    cout<<hist.first<<" : "<<hist.second->Integral()<<endl;
   } cout<<"SR failID (MC subtracted):"<<h_SR_fail->Integral()<<endl;
   h_SR_fail->Sumw2();
   //h_SR_fail->Draw("e");

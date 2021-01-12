@@ -96,14 +96,32 @@ void fillHists(std::map<TString, TH1F*> &histVec, ROOT::RDataFrame &df, std::str
   histVec[sample] = (TH1F*) hist.Clone(sample+"_"+region); std::cout<<sample<<" in "<<region<<": "<<histVec[sample]->Integral()<<endl;
 }
 
+void cloneHistMap(std::map<TString, TH1F*> &h_ori, std::map<TString, TH1F*> &h_cl){
+  for(auto h : h_ori) h_cl[h.first] = (TH1F*) h.second->Clone();
+}
+
 //map<TString, EColor> colors;
 map<TString, TString> colors;
 
-void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignoreList, TString region, map<TString, TString> &colors, double *binning){
-  TH1F h_minorBkgs("minor_bkgs", "", binning[0], binning[1], binning[2]); h_minorBkgs.Sumw2();
+void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignoreList, TString region, map<TString, TString> &colors, double *binning, int length = 0, double *x_rebin = nullptr){
   double sumBkgYield = 0.;
 
-  for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
+  TH1F *h_minorBkgs_ori = new TH1F("minor_bkgs", "", binning[0], binning[1], binning[2]); h_minorBkgs_ori->Sumw2();
+
+  TH1F *h_minorBkgs = nullptr;
+
+  if(x_rebin!=nullptr){
+    h_minorBkgs = (TH1F*)h_minorBkgs_ori->Rebin(length-1, "rebin", x_rebin);
+
+    for(auto h : hists){
+      hists[h.first] = (TH1F*) h.second->Rebin(length-1, "rebin", x_rebin);
+    }
+
+  }else{
+    h_minorBkgs = h_minorBkgs_ori;
+  }
+
+  for(int i = 1; i<=h_minorBkgs->GetNbinsX(); i++) h_minorBkgs->SetBinContent(i, 0.);
   for(auto h : hists) { if(h.first=="data"||h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); } cout<<endl<<"sumBkgYield(exclude yy+jets): "<<sumBkgYield<<endl<<endl;
   for(auto h : hists){
     TString h_name = h.first;
@@ -112,10 +130,12 @@ void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignor
     double h_int = h_tmp->Integral(); cout<<h_name<<": "<<h_int/sumBkgYield<<endl;
     if(h_tmp->Integral() > 0.05*sumBkgYield) continue;
     ignoreList.push_back(h_name);
-    h_minorBkgs.Add(h_tmp);
+    h_minorBkgs->Add(h_tmp);
   }
-  hists["others"] = (TH1F*)h_minorBkgs.Clone("others_"+region);
+  hists["others"] = (TH1F*)h_minorBkgs->Clone("others_"+region);
   colors["others"] = "#FF6600";
+
+  delete h_minorBkgs_ori;
 }
 
 void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, string cfSuffix, bool logy, std::vector<TString> igList = {""}){
@@ -192,6 +212,7 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   Data->GetYaxis()->SetRangeUser(y_min, y_max*yScale);
   Sig->GetYaxis()->SetRangeUser(y_min, y_max*yScale);
 
+  Bkg->SetMinimum(y_min);
   Bkg->SetMaximum(y_max*yScale);
 
   ATLASLabel(0.19,0.88,"Internal");

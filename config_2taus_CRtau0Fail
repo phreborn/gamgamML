@@ -1,0 +1,46 @@
+#inputPath:output/
+inputPath:/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Dec_30/
+
+nomSel: cutflow>=15
+srSel: pt_yy/1000>100 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40
+#crSel: pt_yy/1000<100 && n_tau==2
+crSel: pt_yy/1000<100 && n_tau==2 && ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25))
+#vrSel: pt_yy/1000>100 && tau0_charge*tau1_charge>0
+
+#nomSel: met_TST/1000>30 && m_tautau/1000<130 && n_tau==2 && tau0_pt/1000>40 && pt_yy/1000>100
+#srSel: tau0_charge*tau1_charge<0
+#crSel: tau0_charge*tau1_charge>0
+
+#nomSel: met_TST/1000>30 && m_tautau/1000<130 && n_tau==2 && tau0_pt/1000>40
+#srSel: pt_yy/1000>100 && tau0_charge*tau1_charge<0
+#crSel: pt_yy/1000<100 && tau0_charge*tau1_charge>0
+
+#nomSel: n_tau==2
+#srSel: pt_yy/1000>100
+#crSel: pt_yy/1000<100
+
+#nomSel: n_tau==2
+#srSel: tau0_charge*tau1_charge<0
+#crSel: tau0_charge*tau1_charge>0
+
+passID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+failID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+srpassID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+srfailID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+#passID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+#failID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+#crpassID: ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+#crfailID: ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+crpassID: ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+crfailID: ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+doBlind: TRUE
+blindSel: (m_yy/1000<120 || m_yy/1000>130)
+
+#m_yy/1000
+mainVar: m_yy, 105, 160
+FFDependVar: tau0_pt, 20, 120

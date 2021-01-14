@@ -5,9 +5,17 @@ void getFakeFactor()
   gStyle->SetErrorX(0.5);
   gStyle->SetPalette(kOcean);
 
-  //string config = "config_2taus";
-  string config = "config_2taus_CRtau0Fail";
-  //string config = "configLepTau";
+  ////string config = "config_2taus";
+  ////string config = "config_2taus_CRtau0Fail";
+  //string config = "config_2taus_invertTau0";
+  ////string config = "configLepTau";
+
+  string nprong = "_1p";
+  string cfSuffix = "2taus_invertTau0";
+  string config = "config_";
+  config.append(cfSuffix);
+  config.append(nprong);
+
   double maxFFVar = 120000;
   int nBins = 20;
   bool deriveFF = true;
@@ -362,7 +370,7 @@ void getFakeFactor()
   h_SR_fail->Sumw2();
   //h_SR_fail->Draw("e");
 
-  TFile *f_out = new TFile("forSR_pass.root", "recreate");
+  TFile *f_out = new TFile(Form("forSR_pass_%s%s.root", cfSuffix.data(), nprong.data()), "recreate");
 
   f_out->cd();
   h_FF_rb->Write();

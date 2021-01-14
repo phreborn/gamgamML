@@ -1,0 +1,29 @@
+#inputPath:output/
+inputPath:/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Jan_7/
+
+nomSel: n_bjet==0
+
+#SR pass subleading photon && pass leading tau
+#SR pass/fail blinded simultaneously
+srSel: n_tau==2 && ( y1_passPID&& y1_passIso && y0_passPID&&y0_passIso) && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && tau0_charge*tau1_charge<0 && ((m_yy/1000>105&&m_yy/1000<120) || (m_yy/1000>130&&m_yy/1000<160))
+#CR fail subleading photon
+#supposing pass/fail leading tau yield the same FF
+#supposing OS/SS yield the same FF
+crSel: n_tau==2 && ((!y1_passPID&&!y1_passIso && y0_passPID&&y0_passIso)||(y1_passPID&&y1_passIso && !y0_passPID&&!y0_passIso)) && tau1_ntracks==3
+#VR pass subleading photon && fail leading tau
+vrSel: n_tau==2 && ( y1_passPID&& y1_passIso && y0_passPID&&y0_passIso) && ((tau0_ntracks==1&&tau0_rnn_flat<0.15)||(tau0_ntracks==3&&tau0_rnn_flat<0.25)) && tau0_charge*tau1_charge<0
+
+
+srpassID: ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+srfailID: ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+crpassID: ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25))
+crfailID: ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25))
+
+#data blind
+doBlind: TRUE
+blindSel: (m_yy/1000<120 || m_yy/1000>130)
+
+#unit: m_yy/1000
+mainVar: m_yy, 105, 160
+FFDependVar: tau0_pt, 20, 120

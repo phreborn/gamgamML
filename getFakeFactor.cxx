@@ -11,7 +11,7 @@ void getFakeFactor()
   ////string config = "configLepTau";
 
   string nprong = "_1p";
-  string cfSuffix = "2taus_invertTau0";
+  string cfSuffix = "2taus_invertGam1";
   string config = "config_";
   config.append(cfSuffix);
   config.append(nprong);

@@ -1,6 +1,6 @@
 #include "fakeFactor.h"
 
-void subTauFF_SR_pass(){
+void subTauFF_VR(){
   gStyle->SetErrorX(0.5);
 
   //string cfSuffix = "2taus";
@@ -13,6 +13,8 @@ void subTauFF_SR_pass(){
   //int nBins = 20;
 //  int nBins = 1;
   int nBins = 55;
+
+  bool isSR = false;
 
   map<TString,TString> samples_id;
   samples_id["data"] = "data";
@@ -172,102 +174,102 @@ binning[2] = varMax;
 
     ROOT::RDataFrame df(ch, {"m_yy"});
 
-    TH1F h_sr_fail("h_sr_fail", "", nBins, varMin, varMax); h_sr_fail.Sumw2();
-    TH1F h_sr_pass("h_sr_pass", "", nBins, varMin, varMax); h_sr_pass.Sumw2();
+    TH1F h_vr_fail("h_vr_fail", "", nBins, varMin, varMax); h_vr_fail.Sumw2();
+    TH1F h_vr_pass("h_vr_pass", "", nBins, varMin, varMax); h_vr_pass.Sumw2();
 
-    auto df_sr_fail = df.Filter(srfailAllCut);
-    df_sr_fail.Foreach([&h_sr_fail] (double var, double w) { h_sr_fail.Fill(var/1000, w); }, {obsVar.data(), "wt"}); cout<<sample<<"_SR_failID :"<<h_sr_fail.Integral()<<endl;
-    srfailHists[sample] = (TH1F*) h_sr_fail.Clone(sample+"_SR_failID");
+    auto df_vr_fail = df.Filter(vrfailAllCut);
+    df_vr_fail.Foreach([&h_vr_fail] (double var, double w) { h_vr_fail.Fill(var/1000, w); }, {obsVar.data(), "wt"}); cout<<sample<<"_VR_failID :"<<h_vr_fail.Integral()<<endl;
+    vrfailHists[sample] = (TH1F*) h_vr_fail.Clone(sample+"_VR_failID");
 
-    if(doBlind && sample=="data"){
-      auto df_sr_pass = df.Filter(srpassAllCut).Filter(blindCut);
-      df_sr_pass.Foreach([&h_sr_pass] (double var, double w) { h_sr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
-      srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
+    if(isSR && doBlind && sample=="data"){
+      auto df_vr_pass = df.Filter(vrpassAllCut).Filter(blindCut);
+      df_vr_pass.Foreach([&h_vr_pass] (double var, double w) { h_vr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
+      vrpassHists[sample] = (TH1F*) h_vr_pass.Clone(sample+"_VR_passID");
     }else{
-      auto df_sr_pass = df.Filter(srpassAllCut);
-      df_sr_pass.Foreach([&h_sr_pass] (double var, double w) { h_sr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
-      srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
+      auto df_vr_pass = df.Filter(vrpassAllCut);
+      df_vr_pass.Foreach([&h_vr_pass] (double var, double w) { h_vr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
+      vrpassHists[sample] = (TH1F*) h_vr_pass.Clone(sample+"_VR_passID");
     }
 
-    TH1F h_sr_fail_x_FF_nom("h_sr_fail_x_FF_nom", "", nBins, varMin, varMax);
-    h_sr_fail_x_FF_nom.Sumw2();
-    TH1F h_sr_fail_x_FF_upFF("h_sr_fail_x_FF_upFF", "", nBins, varMin, varMax);
+    TH1F h_vr_fail_x_FF_nom("h_vr_fail_x_FF_nom", "", nBins, varMin, varMax);
+    h_vr_fail_x_FF_nom.Sumw2();
+    TH1F h_vr_fail_x_FF_upFF("h_vr_fail_x_FF_upFF", "", nBins, varMin, varMax);
 
     if(sample!="yy2L"&&sample!="Sherpa2_diphoton"){
-      auto df_sr_fail_x_FF = df.Filter(srfailAllCut);
+      auto df_vr_fail_x_FF = df.Filter(vrfailAllCut);
 
-      df_sr_fail_x_FF.Foreach([&h_FF_1p, &h_FF_3p, &h_sr_fail_x_FF_nom](double var, double tau0_pt, double tau1_pt, int tau1_np, double w){
+      df_vr_fail_x_FF.Foreach([&h_FF_1p, &h_FF_3p, &h_vr_fail_x_FF_nom](double var, double tau0_pt, double tau1_pt, int tau1_np, double w){
         //double ff0 = h_FF->GetBinContent(h_FF->FindBin(tau0_pt/1000));
         double ff1 = 0.;
         if(tau1_np == 1) ff1 = h_FF_1p->GetBinContent(h_FF_1p->FindBin(tau1_pt/1000));
         if(tau1_np == 3) ff1 = h_FF_3p->GetBinContent(h_FF_3p->FindBin(tau1_pt/1000));
-        //h_sr_fail_x_FF_nom.Fill(var/1000, w*ff0*ff1);
-        //h_sr_fail_x_FF_nom.Fill(var/1000, w*ff0); // leading tau FF
-        h_sr_fail_x_FF_nom.Fill(var/1000, w*ff1); // subleading tau FF
+        //h_vr_fail_x_FF_nom.Fill(var/1000, w*ff0*ff1);
+        //h_vr_fail_x_FF_nom.Fill(var/1000, w*ff0); // leading tau FF
+        h_vr_fail_x_FF_nom.Fill(var/1000, w*ff1); // subleading tau FF
       }, {obsVar.data(), "tau0_pt", "tau1_pt", "tau1_ntracks", "wt"});
 
-      df_sr_fail_x_FF.Foreach([&h_FF_1p, &h_FF_3p, &h_sr_fail_x_FF_upFF](double var, double tau0_pt, double tau1_pt, int tau1_np, double w){
+      df_vr_fail_x_FF.Foreach([&h_FF_1p, &h_FF_3p, &h_vr_fail_x_FF_upFF](double var, double tau0_pt, double tau1_pt, int tau1_np, double w){
         //double ff0 = h_FF->GetBinError(h_FF->FindBin(tau0_pt/1000))+h_FF->GetBinContent(h_FF->FindBin(tau0_pt/1000));
         double ff1 = 0.;
         if(tau1_np == 1) ff1 = h_FF_1p->GetBinError(h_FF_1p->FindBin(tau1_pt/1000))+h_FF_1p->GetBinContent(h_FF_1p->FindBin(tau1_pt/1000));
         if(tau1_np == 3) ff1 = h_FF_3p->GetBinError(h_FF_3p->FindBin(tau1_pt/1000))+h_FF_3p->GetBinContent(h_FF_3p->FindBin(tau1_pt/1000));
-        //h_sr_fail_x_FF_upFF.Fill(var/1000, w*ff0*ff1);
-        //h_sr_fail_x_FF_upFF.Fill(var/1000, w*ff0);
-        h_sr_fail_x_FF_upFF.Fill(var/1000, w*ff1);
+        //h_vr_fail_x_FF_upFF.Fill(var/1000, w*ff0*ff1);
+        //h_vr_fail_x_FF_upFF.Fill(var/1000, w*ff0);
+        h_vr_fail_x_FF_upFF.Fill(var/1000, w*ff1);
       }, {obsVar.data(), "tau0_pt", "tau1_pt", "tau1_ntracks", "wt"});
 
       for(int i = 1; i <= nBins; i++){
-        double sysFF = h_sr_fail_x_FF_upFF.GetBinContent(i)-h_sr_fail_x_FF_nom.GetBinContent(i);
-        double stat = h_sr_fail_x_FF_nom.GetBinError(i);
+        double sysFF = h_vr_fail_x_FF_upFF.GetBinContent(i)-h_vr_fail_x_FF_nom.GetBinContent(i);
+        double stat = h_vr_fail_x_FF_nom.GetBinError(i);
         double err = std::sqrt(std::pow(sysFF, 2) + std::pow(stat, 2));
-        h_sr_fail_x_FF_nom.SetBinError(i, err); //cout<<"bin "<<i<<" sysFF stat and total uncer: "<<sysFF<<" "<<stat<<" "<<err<<endl;
-      } cout<<sample<<"_SR_failID_x_FF : "<<h_sr_fail_x_FF_nom.Integral()<<endl;
-      srfailTimesFFHists[sample] = (TH1F*)h_sr_fail_x_FF_nom.Clone(sample+"_SR_failID_x_FF");
+        h_vr_fail_x_FF_nom.SetBinError(i, err); //cout<<"bin "<<i<<" sysFF stat and total uncer: "<<sysFF<<" "<<stat<<" "<<err<<endl;
+      } cout<<sample<<"_VR_failID_x_FF : "<<h_vr_fail_x_FF_nom.Integral()<<endl;
+      vrfailTimesFFHists[sample] = (TH1F*)h_vr_fail_x_FF_nom.Clone(sample+"_VR_failID_x_FF");
     }
   }
 
-  double srpassData = srpassHists["data"]->Integral(); cout<<endl<<"data in SR pass "<<srpassData<<endl;
-  for(auto h : srpassHists){
+  double vrpassData = vrpassHists["data"]->Integral(); cout<<endl<<"data in VR pass "<<vrpassData<<endl;
+  for(auto h : vrpassHists){
     TString hname = h.first;
     if(hname=="data") continue;
     TH1F* htmp = h.second; cout<<hname<<" "<<htmp->Integral()<<endl;
     if(hname=="Sherpa2_diphoton"||hname=="yy2L") continue;
-    srpassData -= htmp->Integral();
-  } cout<<"data in SR pass(MC subtracted) "<<srpassData<<endl;
+    vrpassData -= htmp->Integral();
+  } cout<<"data in VR pass(MC subtracted) "<<vrpassData<<endl;
 
-  double srfailData = srfailHists["data"]->Integral(); cout<<endl<<"data in SR fail "<<srfailData<<endl;
-  for(auto h : srfailHists){
+  double vrfailData = vrfailHists["data"]->Integral(); cout<<endl<<"data in VR fail "<<vrfailData<<endl;
+  for(auto h : vrfailHists){
     TString hname = h.first;
     if(hname=="data") continue;
     TH1F* htmp = h.second; cout<<hname<<" "<<htmp->Integral()<<endl;
     if(hname=="Sherpa2_diphoton"||hname=="yy2L") continue;
-    srfailData -= htmp->Integral();
-  } cout<<"data in SR fail(MC subtracted) "<<srfailData<<endl;
+    vrfailData -= htmp->Integral();
+  } cout<<"data in VR fail(MC subtracted) "<<vrfailData<<endl;
 
   /****** FF*N_data - FF*N_mc ******/
-  TH1F *h_SR_fail_x_FF = (TH1F*) srfailTimesFFHists["data"]->Clone("SR_failID_x_FF"); cout<<endl<<endl<<"==> SR failID x FF:"<<h_SR_fail_x_FF->Integral()<<endl<<endl;
-  h_SR_fail_x_FF->Sumw2();
-  for(auto hist : srfailTimesFFHists){
+  TH1F *h_VR_fail_x_FF = (TH1F*) vrfailTimesFFHists["data"]->Clone("VR_failID_x_FF"); cout<<endl<<endl<<"==> VR failID x FF:"<<h_VR_fail_x_FF->Integral()<<endl<<endl;
+  h_VR_fail_x_FF->Sumw2();
+  for(auto hist : vrfailTimesFFHists){
     if(hist.first == "data") continue;
     if(hist.first == "yy2L") continue;
     if(hist.first == "Sherpa2_diphoton") continue;
-    h_SR_fail_x_FF->Add(hist.second, -1); cout<<hist.first<<" :"<<hist.second->Integral()<<endl;
-  } //h_SR_fail_x_FF->Draw("e");
-  cout<<endl<<"==> SR failID x FF (MC subtracted):"<<h_SR_fail_x_FF->Integral()<<endl<<endl;
+    h_VR_fail_x_FF->Add(hist.second, -1); cout<<hist.first<<" :"<<hist.second->Integral()<<endl;
+  } //h_VR_fail_x_FF->Draw("e");
+  cout<<endl<<"==> VR failID x FF (MC subtracted):"<<h_VR_fail_x_FF->Integral()<<endl<<endl;
 
   /****** ignore and merge bkgs ******/
   std::vector<TString> ignoreList;
 
   ignoreList.push_back("Sherpa2_diphoton");
-  srpassHists["yyjj_fake"] = (TH1F*)h_SR_fail_x_FF->Clone("yyjj_fake_SR_passID");
+  vrpassHists["yyjj_fake"] = (TH1F*)h_VR_fail_x_FF->Clone("yyjj_fake_VR_passID");
   //colors["yyjj_fake"] = (EColor) (kRed);
   colors["yyjj_fake"] = "#CC3333";
 
 //  TH1F h_minorBkgs("minor_bkgs", "", nBins, varMin, varMax); h_minorBkgs.Sumw2();
 //  for(int i = 1; i<=h_minorBkgs.GetNbinsX(); i++) h_minorBkgs.SetBinContent(i, 0.);
 //  double sumBkgYield = 0.;
-//  for(auto h : srpassHists) { if(h.first=="data" || h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); }
-//  for(auto h : srpassHists){
+//  for(auto h : vrpassHists) { if(h.first=="data" || h.first=="Sherpa2_diphoton") continue; sumBkgYield += h.second->Integral(); }
+//  for(auto h : vrpassHists){
 //    TString h_name = h.first;
 //    if(h_name=="yy2L") continue; // needed!!
 //    TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
@@ -275,25 +277,25 @@ binning[2] = varMax;
 //    ignoreList.push_back(h_name);
 //    h_minorBkgs.Add(h_tmp);
 //  }
-//  srpassHists["others"] = (TH1F*)h_minorBkgs.Clone("others_SR_passID");
+//  vrpassHists["others"] = (TH1F*)h_minorBkgs.Clone("others_VR_passID");
 //  //colors["others"] = (EColor) (kOrange);
 //  colors["others"] = "#FF6600";
 
 double x_rebin[4] = {105, 120, 130, 160};
 int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
 
-std::map<TString, TH1F*> srpassHists_clone; // b) rebin
-cloneHistMap(srpassHists, srpassHists_clone);
-ignoreAndMerge(srpassHists_clone, ignoreList, "SR_passID", colors, binning, length, x_rebin);
+std::map<TString, TH1F*> vrpassHists_clone; // b) rebin
+cloneHistMap(vrpassHists, vrpassHists_clone);
+ignoreAndMerge(vrpassHists_clone, ignoreList, "VR_passID", colors, binning, length, x_rebin);
 
   /****** draw hist stack plot ******/
-//  stackHist(srpassHists, obsVar, "VR", cfSuffix, false, ignoreList);
-stackHist(srpassHists_clone, obsVar, "VR", cfSuffix, false, ignoreList);
+//  stackHist(vrpassHists, obsVar, "VR", cfSuffix, false, ignoreList);
+stackHist(vrpassHists_clone, obsVar, "VR", cfSuffix, false, ignoreList);
 
 
   /****** save histograms ******/
   TString outputDir = "WSInputs/";
-  for(auto h : srpassHists){
+  for(auto h : vrpassHists){
     TString hname = h.first;
     if(hname == "others" || hname == "Sherpa2_diphoton") continue;
 

@@ -290,6 +290,7 @@ cloneHistMap(vrpassHists, vrpassHists_clone);
 ignoreAndMerge(vrpassHists_clone, ignoreList, "VR_passID", colors, binning);
 
   /****** draw hist stack plot ******/
+drawSR = false;
 //  stackHist(vrpassHists, obsVar, "VR", cfSuffix, false, ignoreList);
 stackHist(vrpassHists_clone, obsVar, "VR", cfSuffix, false, ignoreList);
 

@@ -104,7 +104,7 @@ void cloneHistMap(std::map<TString, TH1F*> &h_ori, std::map<TString, TH1F*> &h_c
 map<TString, TString> colors;
 
 void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignoreList, TString region, map<TString, TString> &colors, double *binning, int length = 0, double *x_rebin = nullptr){
-  double sumBkgYield = 0.;
+  double sumBkgYield = 0.; std::cout<<endl<<"merge minor backgrouds"<<endl;
 
   TH1F *h_minorBkgs_ori = new TH1F("minor_bkgs", "", binning[0], binning[1], binning[2]); h_minorBkgs_ori->Sumw2();
 
@@ -137,6 +137,8 @@ void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignor
 
   delete h_minorBkgs_ori;
 }
+
+bool drawSR = true;
 
 void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, string cfSuffix, bool logy, std::vector<TString> igList = {""}){
   cout<<endl<<endl<<"drawing stack hist.."<<endl<<endl;
@@ -185,8 +187,6 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   if(sumYields > Sig->Integral()) sig_scale = (int)std::round(0.5*sumYields/Sig->Integral());
   Sig->Scale(sig_scale);
 
-  lg->AddEntry(Sig, Form("signal #times %i",sig_scale), "l");
-
   double y_max = 0.;
   double data_max = Data->GetMaximum(); cout<<"data y axis maximum: "<<data_max<<endl;
   double bkg_max = Bkg->GetMaximum(); cout<<"bkg y axis maximum: "<<bkg_max<<endl;
@@ -205,7 +205,10 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   Data->Draw("same e");
   Sig->SetLineColor(kGreen);
   Sig->SetLineWidth(1);
-  Sig->Draw("same hist");
+  if(drawSR){
+    Sig->Draw("same hist");
+    lg->AddEntry(Sig, Form("signal #times %i",sig_scale), "l");
+  }
 
   lg->SetBorderSize(0);
   lg->Draw("same");

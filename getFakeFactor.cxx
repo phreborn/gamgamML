@@ -18,7 +18,7 @@ void getFakeFactor()
 
   double maxFFVar = 120000;
   int nBins = 20;
-  bool deriveFF = true;
+  bool deriveFF = false;
 
   colors["Sherpa2_diphoton"            ] = "#CC3333";
   colors["MGPy8_ttgamgam_allhad"       ] = "#";
@@ -166,32 +166,32 @@ void getFakeFactor()
     //auto df_cr_fail = df.Filter(nomCut).Filter(srCut).Filter(failCut);
     //auto df_cr_fail = df.Filter(nomCut).Filter(srCut).Filter(passCut);
     //df_cr_fail.Foreach([&h_cr_fail] (double m_yy, double w) { h_cr_fail.Fill(m_yy/1000, w); }, {"m_yy", "wt"});
-    df_cr_fail.Foreach([&h_cr_fail] (double tau0_pt, double w) { h_cr_fail.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+    df_cr_fail.Foreach([&h_cr_fail] (double var, double w) { h_cr_fail.Fill(var/1000, w); }, {obsVar.data(), "wt"});
     crfailHists[sample] = (TH1F*) h_cr_fail.Clone(sample+"_CR_failID");
 
     auto df_cr_pass = df.Filter(nomCut).Filter(crCut).Filter(crpassCut);
     //df_cr_pass.Foreach([&h_cr_pass] (double m_yy, double w) { h_cr_pass.Fill(m_yy/1000, w); }, {"m_yy", "wt"});
-    df_cr_pass.Foreach([&h_cr_pass] (double tau0_pt, double w) { h_cr_pass.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+    df_cr_pass.Foreach([&h_cr_pass] (double var, double w) { h_cr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
     crpassHists[sample] = (TH1F*) h_cr_pass.Clone(sample+"_CR_passID");
 
     auto df_sr_fail = df.Filter(nomCut).Filter(srCut).Filter(crfailCut); // using crfailCut for MC comparison between SR and VR
-    df_sr_fail.Foreach([&h_sr_fail] (double tau0_pt, double w) { h_sr_fail.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+    df_sr_fail.Foreach([&h_sr_fail] (double var, double w) { h_sr_fail.Fill(var/1000, w); }, {obsVar.data(), "wt"});
     srfailHists[sample] = (TH1F*) h_sr_fail.Clone(sample+"_SR_failID");
 
     if(doBlind && sample=="data"){
       auto df_sr_pass = df.Filter(nomCut).Filter(srCut).Filter(crpassCut).Filter(blindCut);
-      df_sr_pass.Foreach([&h_sr_pass] (double tau0_pt, double w) { h_sr_pass.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+      df_sr_pass.Foreach([&h_sr_pass] (double var, double w) { h_sr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
       srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
     }else{
       auto df_sr_pass = df.Filter(nomCut).Filter(srCut).Filter(crpassCut);
-      df_sr_pass.Foreach([&h_sr_pass] (double tau0_pt, double w) { h_sr_pass.Fill(tau0_pt/1000, w); }, {"tau0_pt", "wt"});
+      df_sr_pass.Foreach([&h_sr_pass] (double var, double w) { h_sr_pass.Fill(var/1000, w); }, {obsVar.data(), "wt"});
       srpassHists[sample] = (TH1F*) h_sr_pass.Clone(sample+"_SR_passID");
     }
 
 //    cout<<"count: "<<h.Integral()<<endl;
   }
 
-  double x_rebin[5] = {20, 30, 40, 60, maxFFVar/1000};
+  double x_rebin[5] = {20, 25, 30, 40, maxFFVar/1000};
   int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
 
   /****** ignore and merge bkgs ******/
@@ -218,12 +218,12 @@ void getFakeFactor()
     //crfailHists["others"] = (TH1F*)h_minorBkgs.Clone("others_CR_failID");
     //colors["others"] = "#FF6600";
 
-    //stackHist(crfailHists, "tau0_pt", "CRfail", "2taus", true, ignoreList);
+    //stackHist(crfailHists, obsVar, "CRfail", "2taus", true, ignoreList);
 
-    //std::map<TString, TH1F*> crfailHists_clone; // b) rebin
-    //cloneHistMap(crfailHists, crfailHists_clone);
-    //ignoreAndMerge(crfailHists_clone, ignoreList, "CR_failID", colors, binning, length, x_rebin);
-    //stackHist(crfailHists_clone, "tau0_pt", "CRfail", "2taus", true, ignoreList);
+    std::map<TString, TH1F*> crfailHists_clone; // b) rebin
+    cloneHistMap(crfailHists, crfailHists_clone);
+    ignoreAndMerge(crfailHists_clone, ignoreList, "CR_failID", colors, binning, length, x_rebin);
+    stackHist(crfailHists_clone, obsVar, "CRfail", "2taus", true, ignoreList);
 
 
     // CR passID
@@ -233,13 +233,13 @@ void getFakeFactor()
     std::map<TString, TH1F*> crpassHists_clone;
     cloneHistMap(crpassHists, crpassHists_clone);
 
-    //ignoreAndMerge(crpassHists, ignoreList, "CR_passID", colors, binning); // a)
-    //stackHist(crpassHists, "tau0_pt", "CRpass", "2taus", true, ignoreList);
-    ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning);
-    stackHist(crpassHists_clone, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+    ////ignoreAndMerge(crpassHists, ignoreList, "CR_passID", colors, binning); // a)
+    ////stackHist(crpassHists, obsVar, "CRpass", "2taus", true, ignoreList);
+    //ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning);
+    //stackHist(crpassHists_clone, obsVar, "CRpass", "2taus", true, ignoreList);
 
-    //ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning, length, x_rebin); // b) rebin
-    //stackHist(crpassHists_clone, "tau0_pt", "CRpass", "2taus", true, ignoreList);
+    ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning, length, x_rebin); // b) rebin
+    stackHist(crpassHists_clone, obsVar, "CRpass", "2taus", true, ignoreList);
 
 
     //// SR failID
@@ -247,7 +247,7 @@ void getFakeFactor()
     //ignoreList.push_back("Sherpa2_diphoton");
     //ignoreAndMerge(srfailHists, ignoreList, "SR_failID", colors, binning);
 
-    //stackHist(srfailHists, "tau0_pt", "SRfail", "2taus", true, ignoreList);
+    //stackHist(srfailHists, obsVar, "SRfail", "2taus", true, ignoreList);
   }
 
 
@@ -318,10 +318,10 @@ void getFakeFactor()
   }
 
   h_FF_rb->SetMinimum(0.);
-  h_FF_rb->SetMaximum(0.3);
+  h_FF_rb->SetMaximum(0.4);
   h_FF_rb->SetMarkerSize(0);
   h_FF_rb->SetLineColor(kBlue);
-  h_FF_rb->Draw("e1");
+  if(deriveFF) h_FF_rb->Draw("e1");
 
   //TH1F *h_FF_rb_tt = (TH1F*)h_FF_rb->Clone("FF_rb_tautau");
   //h_FF_rb_tt->Sumw2();

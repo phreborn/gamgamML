@@ -12,7 +12,7 @@ void subTauFF_VR(){
   config.append(cfSuffix);
   //int nBins = 20;
 //  int nBins = 1;
-  int nBins = 55;
+  int nBins = 11;
 
   bool isSR = false;
 
@@ -286,7 +286,8 @@ int length = sizeof(x_rebin)/sizeof(x_rebin[0]);
 
 std::map<TString, TH1F*> vrpassHists_clone; // b) rebin
 cloneHistMap(vrpassHists, vrpassHists_clone);
-ignoreAndMerge(vrpassHists_clone, ignoreList, "VR_passID", colors, binning, length, x_rebin);
+//ignoreAndMerge(vrpassHists_clone, ignoreList, "VR_passID", colors, binning, length, x_rebin);
+ignoreAndMerge(vrpassHists_clone, ignoreList, "VR_passID", colors, binning);
 
   /****** draw hist stack plot ******/
 //  stackHist(vrpassHists, obsVar, "VR", cfSuffix, false, ignoreList);

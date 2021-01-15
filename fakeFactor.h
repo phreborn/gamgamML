@@ -143,7 +143,13 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
 
   gStyle->SetErrorX(0.5);
 
-  TCanvas *c = new TCanvas("c", "canvas", 800, 600);
+  TCanvas *c = new TCanvas("c", "canvas", 800, 800);
+
+  TPad *pad1 = new TPad("pad1", "pad1", 0, 0.3, 1, 1.0);
+  pad1->SetBottomMargin(0); // Upper and lower plot are joined
+  //pad1->SetGridx();         // Vertical grid
+  pad1->Draw();             // Draw the upper pad: pad1
+  pad1->cd();               // pad1 becomes the current pad
 
   TLegend* lg = new TLegend(0.59, 0.6, 0.93, 0.9);
 
@@ -220,6 +226,66 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   myText(0.19, 0.76, 1, "DiHiggs, #it{#gamma#gamma}+#it{#tau_{h}#tau_{h}}");
 
   if(logy) c->SetLogy();
+
+  Bkg->GetYaxis()->SetLabelSize(.04);
+  TGaxis *axis = new TGaxis( -5, 20, -5, 220, 20,220,510,"");
+  axis->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  axis->SetLabelSize(15);
+  axis->Draw();
+
+  c->cd();          // Go back to the main canvas before defining pad2
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.3);
+  pad2->SetTopMargin(0);
+  pad2->SetBottomMargin(0.2);
+  //pad2->SetGridx(); // vertical grid
+  pad2->Draw();
+  pad2->cd();
+
+  TH1F *Bkg_noErr = (TH1F*)Bkg->GetStack()->Last()->Clone("Bkg_noError");
+  for(int i=1; i<=Bkg_noErr->GetNbinsX(); i++){
+    Bkg_noErr->SetBinError(i, 0.);
+  }
+
+  TH1F *rData_err = (TH1F*)Data->Clone("ratio_data_err");
+  rData_err->SetLineColor(kBlack);
+  rData_err->SetMinimum(0.2);
+  rData_err->SetMaximum(1.8);
+  rData_err->Sumw2();
+  rData_err->SetStats(0);
+  rData_err->Divide(Bkg_noErr);
+  rData_err->SetMarkerSize(1);
+  rData_err->SetMarkerStyle(20);
+  rData_err->Draw("ep");
+
+  TH1F *rBkg_err = (TH1F*)Bkg_err->Clone("ratio_Bkg_err");
+  rBkg_err->SetLineColor(kBlack);
+  rBkg_err->Divide(Bkg_noErr);
+  rBkg_err->SetMarkerStyle(20);
+  rBkg_err->SetMarkerSize(0);
+  rBkg_err->SetFillStyle(3001);
+  rBkg_err->SetFillColor(kBlack);
+  rBkg_err->Draw("same e2");
+
+  Bkg->GetYaxis()->SetTitleSize(20);
+  Bkg->GetYaxis()->SetTitleFont(43);
+  Bkg->GetYaxis()->SetTitleOffset(1.55);
+
+  rData_err->SetTitle(""); // Remove the ratio title
+
+  rData_err->GetYaxis()->SetTitle("Data/MC");
+  //rData_err->GetYaxis()->SetNdivisions(505);
+  rData_err->GetYaxis()->SetTitleSize(20);
+  rData_err->GetYaxis()->SetTitleFont(43);
+  rData_err->GetYaxis()->SetTitleOffset(1.55);
+  rData_err->GetYaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  rData_err->GetYaxis()->SetLabelSize(15);
+
+  rData_err->GetXaxis()->SetTitle(Form("%s/GeV", varName.data()));
+  rData_err->GetXaxis()->SetTitleSize(20);
+  rData_err->GetXaxis()->SetTitleFont(43);
+  rData_err->GetXaxis()->SetTitleOffset(4.);
+  rData_err->GetXaxis()->SetLabelFont(43); // Absolute font size in pixel (precision 3)
+  rData_err->GetXaxis()->SetLabelSize(15);
 
   c->Update();
   TString pngName = varName.data();

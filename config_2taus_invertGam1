@@ -26,4 +26,4 @@ blindSel: (m_yy/1000<120 || m_yy/1000>130)
 
 #unit: m_yy/1000
 mainVar: m_yy, 105, 160
-FFDependVar: tau0_pt, 20, 120
+FFDependVar: tau1_pt, 20, 120

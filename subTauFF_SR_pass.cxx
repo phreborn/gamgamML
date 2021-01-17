@@ -288,7 +288,7 @@ ignoreAndMerge(srpassHists_clone, ignoreList, "SR_passID", colors, binning, leng
 
   /****** draw hist stack plot ******/
 //  stackHist(srpassHists, obsVar, "VR", cfSuffix, false, ignoreList);
-stackHist(srpassHists_clone, obsVar, "VR", cfSuffix, false, ignoreList);
+stackHist(srpassHists_clone, obsVar, "SRSB", cfSuffix, false, ignoreList);
 
 
   /****** save histograms ******/

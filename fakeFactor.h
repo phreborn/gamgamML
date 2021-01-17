@@ -296,5 +296,5 @@ void stackHist(map<TString, TH1F*> &crfailHists, string varName, TString rg, str
   pngName += cfSuffix.data();
   c->SaveAs(pngName+".png");
 
-  //delete c;
+  delete c;
 }

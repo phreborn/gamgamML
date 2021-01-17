@@ -13,8 +13,8 @@ void getFakeFactor()
   string nprong = "_1p";
   string cfSuffix = "2taus_invertGam1";
   string config = "config_";
+  cfSuffix.append(nprong);
   config.append(cfSuffix);
-  config.append(nprong);
 
   double maxFFVar = 120000;
   int nBins = 20;
@@ -223,7 +223,7 @@ void getFakeFactor()
     std::map<TString, TH1F*> crfailHists_clone; // b) rebin
     cloneHistMap(crfailHists, crfailHists_clone);
     ignoreAndMerge(crfailHists_clone, ignoreList, "CR_failID", colors, binning, length, x_rebin);
-    stackHist(crfailHists_clone, obsVar, "CRfail", "2taus", true, ignoreList);
+    stackHist(crfailHists_clone, obsVar, "CRfail", cfSuffix, true, ignoreList);
 
 
     // CR passID
@@ -239,7 +239,7 @@ void getFakeFactor()
     //stackHist(crpassHists_clone, obsVar, "CRpass", "2taus", true, ignoreList);
 
     ignoreAndMerge(crpassHists_clone, ignoreList, "CR_passID", colors, binning, length, x_rebin); // b) rebin
-    stackHist(crpassHists_clone, obsVar, "CRpass", "2taus", true, ignoreList);
+    stackHist(crpassHists_clone, obsVar, "CRpass", cfSuffix, true, ignoreList);
 
 
     //// SR failID
@@ -370,7 +370,7 @@ void getFakeFactor()
   h_SR_fail->Sumw2();
   //h_SR_fail->Draw("e");
 
-  TFile *f_out = new TFile(Form("forSR_pass_%s%s.root", cfSuffix.data(), nprong.data()), "recreate");
+  TFile *f_out = new TFile(Form("forSR_pass_%s.root", cfSuffix.data()), "recreate");
 
   f_out->cd();
   h_FF_rb->Write();

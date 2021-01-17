@@ -126,6 +126,7 @@ void ignoreAndMerge(std::map<TString, TH1F*> &hists, std::vector<TString> &ignor
   for(auto h : hists){
     TString h_name = h.first;
     if(h_name=="yy2L") continue; // needed!!
+    if(h_name=="Sherpa2_diphoton") continue; // in single photon CR, y+jets >> yy+jets, needed!
     TH1F *h_tmp = (TH1F*) h.second->Clone("hist_tmp_"+h_name);
     double h_int = h_tmp->Integral(); cout<<h_name<<": "<<h_int/sumBkgYield<<endl;
     if(h_tmp->Integral() > 0.05*sumBkgYield) continue;

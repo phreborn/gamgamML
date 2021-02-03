@@ -1,9 +1,26 @@
 #addVariable: n_lep,n_pfjet,n_pfjet_noOLR,n_bjet,n_bjet_30,met_TST,phi_TST,sumet_TST,y0_pt,y0_eta,y0_phi,y1_pt,y1_eta,y1_phi,m_yy,tau0_pt,tau0_eta,tau0_phi,tau0_charge,tau0_ntracks,tau0_rnn,tau0_rnn_flat,tau1_pt,tau1_eta,tau1_phi,tau1_charge,tau1_ntracks,tau1_rnn_flat,m_tautau,m_jj,pt_yy,pt_tautau,eta_yy,eta_tautau,phi_yy,phi_tautau,dR_yy_tautau,dR_yy_jj,dR_y_y,dR_tau_tau,
 #addVariable: met_TST,phi_TST,sumet_TST,y0_pt,y0_eta,y0_phi,y1_pt,y1_eta,y1_phi,m_yy,tau0_pt,tau0_eta,tau0_phi,tau0_charge,tau0_ntracks,tau0_rnn,tau0_rnn_flat,tau1_pt,tau1_eta,tau1_phi,tau1_charge,tau1_ntracks,tau1_rnn_flat,m_tautau,m_jj,pt_yy,pt_tautau,eta_yy,eta_tautau,phi_yy,phi_tautau,dR_yy_tautau,dR_yy_jj,dR_y_y,dR_tau_tau,
-addVariable: met_TST,phi_TST,sumet_TST,m_tautau,m_jj,pt_yy,pt_tautau,eta_yy,eta_tautau,phi_yy,phi_tautau,dR_yy_tautau,dR_yy_jj,dR_y_y,dR_tau_tau,
+#cutSR: cutflow>=15 && pt_yy/1000>100 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25)) && (m_yy/1000>120&&m_yy/1000<130)
 
-noIDSel: cutflow>=15 && (m_yy/1000>105 && m_yy/1000<160) && pt_yy/1000>100 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40
+#addVariable: met_TST,phi_TST,sumet_TST,m_tautau,m_jj,pt_yy,pt_tautau,eta_yy,eta_tautau,phi_yy,phi_tautau,dR_yy_tautau,dR_yy_jj,dR_y_y,dR_tau_tau,tau0_pt,
 
-cutSR: cutflow>=15 && pt_yy/1000>100 && n_tau==2 && tau0_charge*tau1_charge<0 && met_TST/1000>30 && m_tautau/1000<130 && tau0_pt/1000>40 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25)) && (m_yy/1000>120&&m_yy/1000<130)
+#addVariable: met_TST,sumet_TST,m_tautau,m_jj,pt_yy,pt_tautau,eta_yy,eta_tautau,dR_yy_tautau,dR_y_y,dR_tau_tau,tau0_pt,phi_TST,phi_yy,phi_tautau,dR_yy_jj
 
-inputPath:/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Dec_30/
+#addVariable: met_TST,sumet_TST,m_tautau,m_jj,pt_yy,pt_tautau,eta_yy,eta_tautau,dR_yy_tautau,dR_y_y,dR_tau_tau,tau0_pt,
+
+#inputPath:/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Dec_30/
+
+addVariable: met_TST,sumet_TST,m_tautau,pt_yy,pt_tautau,eta_yy,dR_y_y,dR_tau_tau,tau0_pt,
+
+# for dump and calc BDT
+noIDSel: n_bjet==0 && cutflow>=15 && n_tau==2 && tau0_charge*tau1_charge<0 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && (m_yy/1000>105 && m_yy/1000<160)
+
+cutSR: n_bjet==0 && cutflow>=15 && n_tau==2 && tau0_charge*tau1_charge<0 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25)) && (m_yy/1000>120&&m_yy/1000<130)
+
+cutSR_antiID: n_bjet==0 && cutflow>=15 && n_tau==2 && tau0_charge*tau1_charge<0 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25)) && (m_yy/1000>120&&m_yy/1000<130)
+
+inputPath:/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Jan_7/
+
+cutSB: n_bjet==0 && cutflow>=15 && n_tau==2 && tau0_charge*tau1_charge<0 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat>0.15)||(tau1_ntracks==3&&tau1_rnn_flat>0.25)) && (m_yy/1000<120||m_yy/1000>130)
+
+cutSB_antiID: n_bjet==0 && cutflow>=15 && n_tau==2 && tau0_charge*tau1_charge<0 && ((tau0_ntracks==1&&tau0_rnn_flat>0.15)||(tau0_ntracks==3&&tau0_rnn_flat>0.25)) && ((tau1_ntracks==1&&tau1_rnn_flat<0.15)||(tau1_ntracks==3&&tau1_rnn_flat<0.25)) && (m_yy/1000<120||m_yy/1000>130)

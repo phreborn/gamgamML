@@ -1,4 +1,4 @@
-#include "/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/fakeFactor.h"
+#include "/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/fakeFactor.h"
 
 using namespace TMVA::Experimental;
 
@@ -106,7 +106,7 @@ void dumpAndCalculateBDT(){
     //std::cout << "RTensor input for inference on data of multiple events:\n" << x << "\n\n";
     //std::cout << "Prediction performed on multiple events: " << y << "\n\n";
 
-    outPath = outPath.ReplaceAll(dirpath, "/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/mva/"); //cout<<outPath<<endl;
+    outPath = outPath.ReplaceAll(dirpath, "/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/mva/"); //cout<<outPath<<endl;
     df_forceFloat.Define("BDT", Compute<15, float>(model), f_variables)
                  .Define("BDT0", [](vector<float> BDT){ return (double)(1000.0*BDT.at(0)); }, {"BDT"})
                  .Snapshot("output", outPath.Data());

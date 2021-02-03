@@ -40,7 +40,7 @@
 /// \macro_code
 /// \author Andreas Hoecker
 
-#include "/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/fakeFactor.h"
+#include "/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/fakeFactor.h"
 #include "headTMVA.h"
 
 #include <cstdlib>
@@ -78,29 +78,9 @@ int myTMVA( TString myMethodList = "" )
    // Default MVA methods to be trained + tested
    std::map<std::string,int> Use;
 
-   // Neural Networks (all are feed-forward Multilayer Perceptrons)
-   Use["MLP"]             = 0; // Recommended ANN
-   Use["MLPBFGS"]         = 0; // Recommended ANN with optional training method
-   Use["MLPBNN"]          = 1; // Recommended ANN with BFGS training method and bayesian regulator
-   Use["CFMlpANN"]        = 0; // Depreciated ANN from ALEPH
-   Use["TMlpANN"]         = 0; // ROOT's own ANN
-#ifdef R__HAS_TMVAGPU
-   Use["DNN_GPU"]         = 1; // CUDA-accelerated DNN training.
-#else
-   Use["DNN_GPU"]         = 0;
-#endif
-
-#ifdef R__HAS_TMVACPU
-   Use["DNN_CPU"]         = 1; // Multi-core accelerated DNN.
-#else
-   Use["DNN_CPU"]         = 0;
-#endif
    // Boosted Decision Trees
    Use["BDT"]             = 1; // uses Adaptive Boost
    Use["BDTG"]            = 0; // uses Gradient Boost
-   Use["BDTB"]            = 0; // uses Bagging
-   Use["BDTD"]            = 0; // decorrelation + Adaptive Boost
-   Use["BDTF"]            = 0; // allow usage of fisher discriminant for node splitting
    // ---------------------------------------------------------------
 
    std::cout << std::endl;
@@ -147,11 +127,13 @@ int myTMVA( TString myMethodList = "" )
 
    // Register the training and test trees
 
-   TFile *inputs = new TFile("/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Dec_30/fullrun2/450698_yy2L.root", "read");
-   TFile *inputb = new TFile("/scratchfs/bes/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Dec_30/fullrun2/bkgs_for_mva/ZH_ggZH_tautaugamgam.root", "read");
+   TFile *inputs = new TFile("/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Jan_7/fullrun2/for_mva/450698_yy2L.root", "read");
+   TFile *inputb = new TFile("/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Jan_7/fullrun2/for_mva/MVAbkgs.root", "read");
+   TFile *inputb_yy = new TFile("/scratchfs/atlas/chenhr/atlaswork/multilepton/gamgamML/fakeFactor/output/h025_Jan_7/fullrun2/for_mva/364352_Sherpa2_diphoton_myy_90_175.root", "read");
 
    TTree *signalTree     = (TTree*)inputs->Get("output");
    TTree *background     = (TTree*)inputb->Get("output");
+   TTree *background_yy     = (TTree*)inputb_yy->Get("output");
 
    // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
    TString outfileName( "outTMVA.root" );
@@ -196,6 +178,8 @@ int myTMVA( TString myMethodList = "" )
     dataloader->AddVariable(var, 'D');
   }
 
+  dataloader->AddSpectator("eventNumber", 'I');
+
    // You can add so-called "Spectator variables", which are not used in the MVA training,
    // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
    // input variables, the response values of all trained MVAs, and the spectator variables
@@ -208,9 +192,15 @@ int myTMVA( TString myMethodList = "" )
    Double_t signalWeight     = 1.0;
    Double_t backgroundWeight = 1.0;
 
+   //double FFyield = 2.33991; // MC not subtracted
+   double FFyield = 2.14684;
+   double MCyield = 6.8135;
+   Double_t backgroundWeight_yy = FFyield/MCyield;
+
    // You can add an arbitrary number of signal or background trees
    dataloader->AddSignalTree    ( signalTree,     signalWeight );
    dataloader->AddBackgroundTree( background, backgroundWeight );
+   dataloader->AddBackgroundTree( background_yy, backgroundWeight_yy );
 
    // To give different trees for training and testing, do as follows:
    //
@@ -259,8 +249,8 @@ int myTMVA( TString myMethodList = "" )
   dataloader->SetBackgroundWeightExpression( "wt" );
 
    // Apply additional cuts on the signal and background samples (can be different)
-  string cutSR;
-  readConfigFile(config.data(), "cutSR", cutSR);
+  string cutSR = "";
+  //readConfigFile(config.data(), "cutSR", cutSR);
 
    //TCut mycuts = (char*)cutSR.data(); // for example: TCut mycuts = "abs(var1)<0.5 && abs(var2-0.5)<1";
    //TCut mycutb = (char*)cutSR.data(); // for example: TCut mycutb = "abs(var1)<0.5";
@@ -271,7 +261,7 @@ int myTMVA( TString myMethodList = "" )
    // If no numbers of events are given, half of the events in the tree are used
    // for training, and the other half for testing:
    //
-       dataloader->PrepareTrainingAndTestTree( mycut, "SplitMode=random:!V" );
+       dataloader->PrepareTrainingAndTestTree( mycut, "nTest_Signal=2:nTest_Background=2:SplitMode=random:!V" );
    //
    // To also specify the number of testing events, use:
    //
@@ -287,93 +277,43 @@ int myTMVA( TString myMethodList = "" )
    // it is possible to preset ranges in the option string in which the cut optimisation should be done:
    // "...:CutRangeMin[2]=-1:CutRangeMax[2]=1"...", where [2] is the third input variable
 
-   // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
-   if (Use["MLP"])
-      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:!UseRegulator" );
+   UInt_t numFolds = 2;
+   TString analysisType = "Classification";
+   TString splitType = "Deterministic";
+   TString splitExpr = "int(fabs([eventNumber]/1000))%(int([NumFolds]))";
 
-   if (Use["MLPBFGS"])
-      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
+   TString cvOptions = Form("!V"
+                            ":!Silent"
+                            ":ModelPersistence"
+                            ":FoldFileOutput=True"
+                            ":AnalysisType=%s"
+                            ":SplitType=%s"
+                            ":NumFolds=%i"
+                            ":SplitExpr=%s",
+                            analysisType.Data(), splitType.Data(), numFolds,
+                            splitExpr.Data());
 
-   if (Use["MLPBNN"])
-      factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPBNN", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=60:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:UseRegulator" ); // BFGS training with bayesian regulators
-
-
-   // Multi-architecture DNN implementation.
-   if (Use["DNN_CPU"] or Use["DNN_GPU"]) {
-      // General layout.
-      TString layoutString ("Layout=TANH|128,TANH|128,TANH|128,LINEAR");
-
-      // Training strategies.
-      TString training0("LearningRate=1e-2,Momentum=0.9,Repetitions=1,"
-                        "ConvergenceSteps=30,BatchSize=256,TestRepetitions=10,"
-                        "WeightDecay=1e-4,Regularization=None,"
-                        "DropConfig=0.0+0.5+0.5+0.5, Multithreading=True");
-      TString training1("LearningRate=1e-2,Momentum=0.9,Repetitions=1,"
-                        "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
-                        "WeightDecay=1e-4,Regularization=L2,"
-                        "DropConfig=0.0+0.0+0.0+0.0, Multithreading=True");
-      TString training2("LearningRate=1e-3,Momentum=0.0,Repetitions=1,"
-                        "ConvergenceSteps=20,BatchSize=256,TestRepetitions=10,"
-                        "WeightDecay=1e-4,Regularization=L2,"
-                        "DropConfig=0.0+0.0+0.0+0.0, Multithreading=True");
-      TString trainingStrategyString ("TrainingStrategy=");
-      trainingStrategyString += training0 + "|" + training1 + "|" + training2;
-
-      // General Options.
-      TString dnnOptions ("!H:V:ErrorStrategy=CROSSENTROPY:VarTransform=N:"
-                          "WeightInitialization=XAVIERUNIFORM");
-      dnnOptions.Append (":"); dnnOptions.Append (layoutString);
-      dnnOptions.Append (":"); dnnOptions.Append (trainingStrategyString);
-
-      // Cuda implementation.
-      if (Use["DNN_GPU"]) {
-         TString gpuOptions = dnnOptions + ":Architecture=GPU";
-         factory->BookMethod(dataloader, TMVA::Types::kDL, "DNN_GPU", gpuOptions);
-      }
-      // Multi-core CPU implementation.
-      if (Use["DNN_CPU"]) {
-         TString cpuOptions = dnnOptions + ":Architecture=CPU";
-         factory->BookMethod(dataloader, TMVA::Types::kDL, "DNN_CPU", cpuOptions);
-      }
-   }
-
-   // CF(Clermont-Ferrand)ANN
-   if (Use["CFMlpANN"])
-      factory->BookMethod( dataloader, TMVA::Types::kCFMlpANN, "CFMlpANN", "!H:!V:NCycles=200:HiddenLayers=N+1,N"  ); // n_cycles:#nodes:#nodes:...
-
-   // Tmlp(Root)ANN
-   if (Use["TMlpANN"])
-      factory->BookMethod( dataloader, TMVA::Types::kTMlpANN, "TMlpANN", "!H:!V:NCycles=200:HiddenLayers=N+1,N:LearningMethod=BFGS:ValidationFraction=0.3"  ); // n_cycles:#nodes:#nodes:...
-
-   // Support Vector Machine
-   if (Use["SVM"])
-      factory->BookMethod( dataloader, TMVA::Types::kSVM, "SVM", "Gamma=0.25:Tol=0.001:VarTransform=Norm" );
+   TMVA::CrossValidation cv{"TMVACrossValidation", dataloader, outputFile, cvOptions};
 
    // Boosted Decision Trees
    if (Use["BDTG"]) // Gradient Boost
-      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG",
-                           "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
+//      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTG",
+//                           "!H:!V:NTrees=1000:MinNodeSize=2.5%:BoostType=Grad:Shrinkage=0.10:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=2" );
+   cv.BookMethod(TMVA::Types::kBDT, "BDTG",
+                 "!H:!V:NTrees=500:MinNodeSize=2.5%:BoostType=Grad"
+                 ":Shrinkage=0.10:nCuts=20"
+                 ":UseBaggedBoost:BaggedSampleFraction=0.5"
+                 ":MaxDepth=2");
 
    if (Use["BDT"])  // Adaptive Boost
-      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT",
-                           "!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" );
+//      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDT",
+//                           "!H:!V:NTrees=850:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" );
+   cv.BookMethod(TMVA::Types::kBDT, "BDT",
+                 "!H:!V:NTrees=450:MinNodeSize=2.5%:BoostType=AdaBoost:AdaBoostBeta=0.5"
+                 ":UseBaggedBoost:BaggedSampleFraction=0.5"
+                 ":SeparationType=GiniIndex:nCuts=20"
+                 ":MaxDepth=3");
 
-   if (Use["BDTB"]) // Bagging
-      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTB",
-                           "!H:!V:NTrees=400:BoostType=Bagging:SeparationType=GiniIndex:nCuts=20" );
-
-   if (Use["BDTD"]) // Decorrelation + Adaptive Boost
-      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTD",
-                           "!H:!V:NTrees=400:MinNodeSize=5%:MaxDepth=3:BoostType=AdaBoost:SeparationType=GiniIndex:nCuts=20:VarTransform=Decorrelate" );
-
-   if (Use["BDTF"])  // Allow Using Fisher discriminant in node splitting for (strong) linearly correlated variables
-      factory->BookMethod( dataloader, TMVA::Types::kBDT, "BDTF",
-                           "!H:!V:NTrees=50:MinNodeSize=2.5%:UseFisherCuts:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:SeparationType=GiniIndex:nCuts=20" );
-
-   // RuleFit -- TMVA implementation of Friedman's method
-   if (Use["RuleFit"])
-      factory->BookMethod( dataloader, TMVA::Types::kRuleFit, "RuleFit",
-                           "H:!V:RuleFitModule=RFTMVA:Model=ModRuleLinear:MinImp=0.001:RuleMinDist=0.001:NTrees=20:fEventsMin=0.01:fEventsMax=0.5:GDTau=-1.0:GDTauPrec=0.01:GDStep=0.01:GDNSteps=10000:GDErrScale=1.02" );
 
    // For an example of the category classifier usage, see: TMVAClassificationCategory
    //
@@ -389,13 +329,14 @@ int myTMVA( TString myMethodList = "" )
    // Now you can tell the factory to train, test, and evaluate the MVAs
    //
    // Train MVAs using the set of training events
-   factory->TrainAllMethods();
+//   factory->TrainAllMethods();
 
    // Evaluate all MVAs using the set of test events
-   factory->TestAllMethods();
+//   factory->TestAllMethods();
 
    // Evaluate and compare performance of all configured MVAs
-   factory->EvaluateAllMethods();
+//   factory->EvaluateAllMethods();
+   cv.Evaluate();
 
    // --------------------------------------------------------------
 
